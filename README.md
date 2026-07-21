@@ -32,7 +32,7 @@ proyecto/
    ```
 3. Conectarse con ese usuario (SQL*Plus, SQL Developer o similar) y ejecutar:
    ```sql
-   @sql/schema.sql
+   @sql/APP.sql
    ```
    Esto crea tablas, secuencias, indices, vistas, procedimientos y triggers, y
    deja datos de prueba (incluyendo el usuario `admin` / contrasena `Admin123`).
