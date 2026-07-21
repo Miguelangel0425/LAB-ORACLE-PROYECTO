@@ -10,7 +10,7 @@ triggers e indices.
 ```
 proyecto/
 ├── sql/
-│   └── schema.sql        # Script SQL completo (DDL, DML, vistas, procedimientos, triggers, indices)
+│   └── APP.sql        # Script SQL completo (DDL, DML, vistas, procedimientos, triggers, indices)
 ├── backend/               # API REST en Node.js / Express
 │   ├── server.js
 │   ├── config/db.js       # Configuracion de conexion a Oracle (pool)
