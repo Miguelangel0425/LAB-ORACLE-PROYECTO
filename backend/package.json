@@ -1,0 +1,14 @@
+{
+  "name": "sistema-gestion-empresarial",
+  "version": "1.0.0",
+  "description": "Sistema web de gestion empresarial (Oracle + Node.js/Express) - Proyecto de Sistemas de Bases de Datos",
+  "main": "server.js",
+  "scripts": {
+    "start": "node server.js",
+    "dev": "node server.js"
+  },
+  "dependencies": {
+    "express": "^4.19.2",
+    "oracledb": "^6.5.1"
+  }
+}

@@ -1,0 +1,146 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<title>Menu principal - Sistema de Gestión Empresarial</title>
+<link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+<div class="app-shell">
+    <aside class="sidebar">
+        <h2>Gestion Empresarial</h2>
+        <p class="user" id="lblUsuario">Usuario</p>
+
+        <button class="nav-item active" data-section="crud">Gestión de Clientes</button>
+        <button class="nav-item" data-section="consultas">Consultas de Ventas</button>
+        <button class="nav-item" data-section="reportes">Reportes</button>
+        <button class="nav-item" id="btnLogout" style="margin-top:30px;">Cerrar sesión</button>
+    </aside>
+
+    <main class="main-content">
+
+        <!-- ================= CRUD CLIENTES ================= -->
+        <section id="sec-crud">
+            <h1>Gestion de Clientes</h1>
+
+            <div class="panel">
+                <h3 id="formTitulo">Nuevo cliente</h3>
+                <form id="formCliente">
+                    <input type="hidden" id="idCliente">
+                    <div class="form-grid">
+                        <div>
+                            <label>Nombre</label>
+                            <input type="text" id="nombre" required>
+                        </div>
+                        <div>
+                            <label>Apellido</label>
+                            <input type="text" id="apellido" required>
+                        </div>
+                        <div>
+                            <label>Email</label>
+                            <input type="text" id="email" required>
+                        </div>
+                        <div>
+                            <label>Telefono</label>
+                            <input type="text" id="telefono">
+                        </div>
+                        <div style="grid-column: 1 / -1;">
+                            <label>Dirección</label>
+                            <input type="text" id="direccion">
+                        </div>
+                    </div>
+                    <button type="submit" class="btn-primary" style="width:auto;">Guardar</button>
+                    <button type="button" id="btnCancelar" class="btn-secondary hidden">Cancelar edición</button>
+                </form>
+                <div id="mensajeCrud"></div>
+            </div>
+
+            <div class="panel">
+                <h3>Listado de clientes</h3>
+                <table>
+                    <thead>
+                        <tr>
+                            <th>ID</th><th>Nombre</th><th>Apellido</th><th>Email</th>
+                            <th>Telefono</th><th>Direccion</th><th>Acciones</th>
+                        </tr>
+                    </thead>
+                    <tbody id="tablaClientes"></tbody>
+                </table>
+            </div>
+        </section>
+
+        <!-- ================= CONSULTAS DE VENTAS ================= -->
+        <section id="sec-consultas" class="hidden">
+            <h1>Consultas de Ventas</h1>
+
+            <div class="panel">
+                <h3>Ventas totales por cliente</h3>
+                <div class="toolbar">
+                    <div>
+                        <label>Cliente</label>
+                        <select id="selectClienteVentas"></select>
+                    </div>
+                    <div>
+                        <button id="btnConsultarTotales" class="btn-primary" style="margin-top:0;">Consultar</button>
+                    </div>
+                </div>
+                <div id="resultadoTotales"></div>
+            </div>
+
+            <div class="panel">
+                <h3>Ventas por rango de fechas</h3>
+                <div class="toolbar">
+                    <div>
+                        <label>Fecha inicio</label>
+                        <input type="date" id="fechaInicio">
+                    </div>
+                    <div>
+                        <label>Fecha fin</label>
+                        <input type="date" id="fechaFin">
+                    </div>
+                    <div>
+                        <button id="btnConsultarRango" class="btn-primary" style="margin-top:0;">Consultar</button>
+                    </div>
+                </div>
+                <table>
+                    <thead><tr><th>ID Venta</th><th>Fecha</th><th>Cliente</th><th>Total</th></tr></thead>
+                    <tbody id="tablaRango"></tbody>
+                </table>
+            </div>
+        </section>
+
+        <!-- ================= REPORTES ================= -->
+        <section id="sec-reportes" class="hidden">
+            <h1>Reportes empresariales</h1>
+
+            <div class="panel">
+                <h3>Ventas totales por cliente</h3>
+                <table>
+                    <thead><tr><th>ID</th><th>Nombre</th><th>Apellido</th><th># Ventas</th><th>Total comprado</th></tr></thead>
+                    <tbody id="tablaReporteTotales"></tbody>
+                </table>
+            </div>
+
+            <div class="panel">
+                <h3>Detalle de ventas</h3>
+                <table>
+                    <thead><tr><th>Venta</th><th>Fecha</th><th>Cliente</th><th>Producto</th><th>Cant.</th><th>Subtotal</th><th>Total venta</th></tr></thead>
+                    <tbody id="tablaReporteDetalle"></tbody>
+                </table>
+            </div>
+
+            <div class="panel">
+                <h3>Clientes activos</h3>
+                <table>
+                    <thead><tr><th>ID</th><th>Nombre</th><th>Apellido</th><th>Email</th><th>Creado</th></tr></thead>
+                    <tbody id="tablaReporteClientes"></tbody>
+                </table>
+            </div>
+        </section>
+
+    </main>
+</div>
+
+<script src="js/menu.js"></script>
+</body>
+</html>
