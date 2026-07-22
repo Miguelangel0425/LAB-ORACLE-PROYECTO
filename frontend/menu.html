@@ -2,138 +2,234 @@
 <html lang="es">
 <head>
 <meta charset="UTF-8">
-<title>Menu principal - Sistema de Gestión Empresarial</title>
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Dashboard - EnterpriseOS</title>
 <link rel="stylesheet" href="css/style.css">
+<!-- CDNs -->
+<script src="https://unpkg.com/lucide@latest"></script>
+<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+<link rel="stylesheet" href="https://cdn.datatables.net/1.13.6/css/jquery.dataTables.min.css">
+<link rel="stylesheet" href="https://cdn.datatables.net/buttons/2.4.1/css/buttons.dataTables.min.css">
+<script src="https://code.jquery.com/jquery-3.7.0.min.js"></script>
+<script>
+    const savedTheme = localStorage.getItem('theme') || 'dark';
+    document.documentElement.setAttribute('data-theme', savedTheme);
+</script>
+<script src="https://cdn.datatables.net/1.13.6/js/jquery.dataTables.min.js"></script>
+<script src="https://cdn.datatables.net/buttons/2.4.1/js/dataTables.buttons.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/pdfmake/0.1.53/pdfmake.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/pdfmake/0.1.53/vfs_fonts.js"></script>
+<script src="https://cdn.datatables.net/buttons/2.4.1/js/buttons.html5.min.js"></script>
+<script src="https://cdn.datatables.net/buttons/2.4.1/js/buttons.print.min.js"></script>
 </head>
 <body>
-<div class="app-shell">
-    <aside class="sidebar">
-        <h2>Gestion Empresarial</h2>
-        <p class="user" id="lblUsuario">Usuario</p>
 
-        <button class="nav-item active" data-section="crud">Gestión de Clientes</button>
-        <button class="nav-item" data-section="consultas">Consultas de Ventas</button>
-        <button class="nav-item" data-section="reportes">Reportes</button>
-        <button class="nav-item" id="btnLogout" style="margin-top:30px;">Cerrar sesión</button>
+<div class="sidebar-overlay"></div>
+
+<button class="mobile-toggle" id="btnMobileToggle">
+    <i data-lucide="menu"></i>
+</button>
+
+<div class="app-shell">
+    <aside class="sidebar" id="sidebar">
+        <div class="sidebar-header">
+            <a href="#" class="sidebar-brand">
+                <div class="brand-icon"><i data-lucide="building-2"></i></div>
+                <div>
+                    <div class="brand-text">EnterpriseOS</div>
+                    <div class="brand-sub">Management System</div>
+                </div>
+            </a>
+        </div>
+
+        <div class="sidebar-user">
+            <div class="user-avatar" id="avatarInitial">U</div>
+            <div class="user-info">
+                <div class="user-name" id="lblUsuario">Usuario</div>
+                <div class="user-role">Administrador</div>
+            </div>
+        </div>
+
+        <nav class="sidebar-nav">
+            <div class="nav-label">Módulos Principales</div>
+            <button class="nav-item active" data-section="crud">
+                <i data-lucide="users" class="nav-icon"></i>
+                Gestión de Clientes
+            </button>
+            <button class="nav-item" data-section="consultas">
+                <i data-lucide="bar-chart-3" class="nav-icon"></i>
+                Consultas de Ventas
+            </button>
+            <button class="nav-item" data-section="reportes">
+                <i data-lucide="file-text" class="nav-icon"></i>
+                Reportes Globales
+            </button>
+        </nav>
+
+        <div class="sidebar-footer">
+            <button class="nav-item-logout" id="btnLogout">
+                <i data-lucide="log-out" class="nav-icon"></i>
+                Cerrar Sesión
+            </button>
+        </div>
     </aside>
 
     <main class="main-content">
-
         <!-- ================= CRUD CLIENTES ================= -->
         <section id="sec-crud">
-            <h1>Gestion de Clientes</h1>
-
-            <div class="panel">
-                <h3 id="formTitulo">Nuevo cliente</h3>
-                <form id="formCliente">
-                    <input type="hidden" id="idCliente">
-                    <div class="form-grid">
-                        <div>
-                            <label>Nombre</label>
-                            <input type="text" id="nombre" required>
-                        </div>
-                        <div>
-                            <label>Apellido</label>
-                            <input type="text" id="apellido" required>
-                        </div>
-                        <div>
-                            <label>Email</label>
-                            <input type="text" id="email" required>
-                        </div>
-                        <div>
-                            <label>Telefono</label>
-                            <input type="text" id="telefono">
-                        </div>
-                        <div style="grid-column: 1 / -1;">
-                            <label>Dirección</label>
-                            <input type="text" id="direccion">
-                        </div>
-                    </div>
-                    <button type="submit" class="btn-primary" style="width:auto;">Guardar</button>
-                    <button type="button" id="btnCancelar" class="btn-secondary hidden">Cancelar edición</button>
-                </form>
-                <div id="mensajeCrud"></div>
+            <div class="page-header" style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 16px;">
+                <div>
+                    <h1><i data-lucide="users" class="header-icon"></i> Gestión de Clientes</h1>
+                    <div class="page-subtitle">Administra la cartera de clientes, añade nuevos registros y edita la información.</div>
+                </div>
+                <button class="btn-primary" id="btnNuevoClienteModal" style="margin: 0;">
+                    <i data-lucide="user-plus" style="width:16px;height:16px"></i> Nuevo Cliente
+                </button>
             </div>
 
             <div class="panel">
-                <h3>Listado de clientes</h3>
-                <table>
-                    <thead>
-                        <tr>
-                            <th>ID</th><th>Nombre</th><th>Apellido</th><th>Email</th>
-                            <th>Telefono</th><th>Direccion</th><th>Acciones</th>
-                        </tr>
-                    </thead>
-                    <tbody id="tablaClientes"></tbody>
-                </table>
+                <h3><i data-lucide="list" class="panel-icon"></i> Directorio de Clientes</h3>
+                <div class="table-responsive">
+                    <table id="tablaClientesDt" class="display" style="width:100%">
+                        <thead>
+                            <tr>
+                                <th>ID</th>
+                                <th>Cliente</th>
+                                <th>Email</th>
+                                <th>Teléfono</th>
+                                <th>Dirección</th>
+                                <th style="text-align:right">Acciones</th>
+                            </tr>
+                        </thead>
+                        <tbody id="tablaClientes">
+                            <!-- Skeleton loader -->
+                            <tr class="skeleton-row"><td colspan="6"><div class="skeleton-cell"></div></td></tr>
+                        </tbody>
+                    </table>
+                </div>
             </div>
         </section>
 
         <!-- ================= CONSULTAS DE VENTAS ================= -->
         <section id="sec-consultas" class="hidden">
-            <h1>Consultas de Ventas</h1>
-
-            <div class="panel">
-                <h3>Ventas totales por cliente</h3>
-                <div class="toolbar">
-                    <div>
-                        <label>Cliente</label>
-                        <select id="selectClienteVentas"></select>
-                    </div>
-                    <div>
-                        <button id="btnConsultarTotales" class="btn-primary" style="margin-top:0;">Consultar</button>
-                    </div>
+            <div class="page-header">
+                <div>
+                    <h1><i data-lucide="bar-chart-3" class="header-icon"></i> Consultas de Ventas</h1>
+                    <div class="page-subtitle">Analiza el rendimiento de ventas por cliente o rango de fechas.</div>
                 </div>
-                <div id="resultadoTotales"></div>
             </div>
 
             <div class="panel">
-                <h3>Ventas por rango de fechas</h3>
+                <h3><i data-lucide="pie-chart" class="panel-icon"></i> Ventas totales por cliente</h3>
                 <div class="toolbar">
-                    <div>
-                        <label>Fecha inicio</label>
-                        <input type="date" id="fechaInicio">
+                    <div class="input-group">
+                        <i data-lucide="user" class="input-icon"></i>
+                        <select id="selectClienteVentas">
+                            <option value="">Seleccione un cliente...</option>
+                        </select>
                     </div>
                     <div>
-                        <label>Fecha fin</label>
+                        <button id="btnConsultarTotales" class="btn-primary" style="margin:0; width:100%;">
+                            <i data-lucide="search" style="width:16px;height:16px"></i> Consultar
+                        </button>
+                    </div>
+                </div>
+                <div id="resultadoTotales">
+                    <div class="empty-state">
+                        <i data-lucide="pie-chart" class="empty-icon"></i>
+                        <p>Selecciona un cliente para ver sus estadísticas</p>
+                    </div>
+                </div>
+            </div>
+
+            <div class="panel">
+                <h3><i data-lucide="calendar" class="panel-icon"></i> Ventas por rango de fechas</h3>
+                <div class="toolbar">
+                    <div class="input-group">
+                        <i data-lucide="calendar" class="input-icon"></i>
+                        <input type="date" id="fechaInicio">
+                    </div>
+                    <div class="input-group">
+                        <i data-lucide="calendar" class="input-icon"></i>
                         <input type="date" id="fechaFin">
                     </div>
                     <div>
-                        <button id="btnConsultarRango" class="btn-primary" style="margin-top:0;">Consultar</button>
+                        <button id="btnConsultarRango" class="btn-primary" style="margin:0; width:100%;">
+                            <i data-lucide="search" style="width:16px;height:16px"></i> Buscar Ventas
+                        </button>
                     </div>
                 </div>
-                <table>
-                    <thead><tr><th>ID Venta</th><th>Fecha</th><th>Cliente</th><th>Total</th></tr></thead>
-                    <tbody id="tablaRango"></tbody>
+                <table id="tablaRangoDt" class="display" style="width:100%">
+                    <thead>
+                        <tr>
+                            <th>Ticket</th>
+                            <th>Fecha</th>
+                            <th>Cliente</th>
+                            <th>Total</th>
+                        </tr>
+                    </thead>
+                    <tbody id="tablaRango">
+                        <tr><td colspan="4" class="empty-state" style="padding: 30px">
+                            <i data-lucide="calendar-search" class="empty-icon"></i>
+                            <p>Ingresa un rango de fechas para consultar las ventas</p>
+                        </td></tr>
+                    </tbody>
                 </table>
             </div>
         </section>
 
         <!-- ================= REPORTES ================= -->
         <section id="sec-reportes" class="hidden">
-            <h1>Reportes empresariales</h1>
+            <div class="page-header">
+                <div>
+                    <h1><i data-lucide="file-text" class="header-icon"></i> Reportes Empresariales</h1>
+                    <div class="page-subtitle">Informes consolidados y métricas globales del sistema.</div>
+                </div>
+            </div>
+
+            <div class="stats-row" id="reportesGlobalStats">
+                <div class="stat-card">
+                    <div class="stat-label">Total Clientes</div>
+                    <div class="stat-value" id="statClientes">--</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-label">Total Ventas Registradas</div>
+                    <div class="stat-value accent" id="statVentas">--</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-label">Ingresos Totales</div>
+                    <div class="stat-value success" id="statIngresos">$--</div>
+                </div>
+            </div>
 
             <div class="panel">
-                <h3>Ventas totales por cliente</h3>
-                <table>
-                    <thead><tr><th>ID</th><th>Nombre</th><th>Apellido</th><th># Ventas</th><th>Total comprado</th></tr></thead>
-                    <tbody id="tablaReporteTotales"></tbody>
+                <h3><i data-lucide="trending-up" class="panel-icon"></i> Mejores Clientes (Volumen de compra)</h3>
+                <table id="dtReporteTotales" class="display" style="width:100%">
+                    <thead><tr><th>ID</th><th>Cliente</th><th># Transacciones</th><th>Volumen Total</th></tr></thead>
+                    <tbody id="tablaReporteTotales">
+                        <tr class="skeleton-row"><td colspan="4"><div class="skeleton-cell"></div></td></tr>
+                    </tbody>
                 </table>
             </div>
 
             <div class="panel">
-                <h3>Detalle de ventas</h3>
-                <table>
-                    <thead><tr><th>Venta</th><th>Fecha</th><th>Cliente</th><th>Producto</th><th>Cant.</th><th>Subtotal</th><th>Total venta</th></tr></thead>
-                    <tbody id="tablaReporteDetalle"></tbody>
+                <h3><i data-lucide="shopping-bag" class="panel-icon"></i> Detalle de Ventas Histórico</h3>
+                <table id="dtReporteDetalle" class="display" style="width:100%">
+                    <thead><tr><th>Ref</th><th>Fecha</th><th>Cliente</th><th>Producto</th><th>Cant.</th><th>Monto</th></tr></thead>
+                    <tbody id="tablaReporteDetalle">
+                        <tr class="skeleton-row"><td colspan="6"><div class="skeleton-cell"></div></td></tr>
+                    </tbody>
                 </table>
             </div>
 
             <div class="panel">
-                <h3>Clientes activos</h3>
-                <table>
-                    <thead><tr><th>ID</th><th>Nombre</th><th>Apellido</th><th>Email</th><th>Creado</th></tr></thead>
-                    <tbody id="tablaReporteClientes"></tbody>
+                <h3><i data-lucide="users" class="panel-icon"></i> Registro de Clientes Activos</h3>
+                <table id="dtReporteClientes" class="display" style="width:100%">
+                    <thead><tr><th>ID</th><th>Cliente</th><th>Email</th><th>Registrado el</th></tr></thead>
+                    <tbody id="tablaReporteClientes">
+                        <tr class="skeleton-row"><td colspan="4"><div class="skeleton-cell"></div></td></tr>
+                    </tbody>
                 </table>
             </div>
         </section>
@@ -141,6 +237,66 @@
     </main>
 </div>
 
+<!-- ================= MODAL CLIENTE ================= -->
+<div class="modal-overlay" id="modalClienteOverlay">
+    <div class="modal-box">
+        <div class="modal-header">
+            <h2 id="modalClienteTitulo"><i data-lucide="user-plus"></i> Nuevo Cliente</h2>
+            <button class="btn-close-modal" id="btnCloseModal"><i data-lucide="x"></i></button>
+        </div>
+        <div class="modal-body">
+            <form id="formCliente">
+                <input type="hidden" id="idCliente">
+                <div class="form-grid">
+                    <div class="input-group">
+                        <i data-lucide="user" class="input-icon"></i>
+                        <input type="text" id="nombre" placeholder="Nombre" required>
+                    </div>
+                    <div class="input-group">
+                        <i data-lucide="user" class="input-icon"></i>
+                        <input type="text" id="apellido" placeholder="Apellido" required>
+                    </div>
+                    <div class="input-group">
+                        <i data-lucide="mail" class="input-icon"></i>
+                        <input type="email" id="email" placeholder="Correo electrónico" required>
+                    </div>
+                    <div class="input-group">
+                        <i data-lucide="phone" class="input-icon"></i>
+                        <input type="tel" id="telefono" placeholder="Teléfono (Ej: 0991234567)" pattern="^09\d{8}$" maxlength="10" title="Debe ser un celular ecuatoriano válido de 10 dígitos, empezando con 09" oninput="this.value = this.value.replace(/\D/g, '')" required>
+                    </div>
+                    <div class="input-group full-width">
+                        <i data-lucide="map-pin" class="input-icon"></i>
+                        <input type="text" id="direccion" placeholder="Dirección completa">
+                    </div>
+                </div>
+            </form>
+        </div>
+        <div class="modal-footer">
+            <button type="button" id="btnCancelarModal" class="btn-secondary" style="margin:0;">Cancelar</button>
+            <button type="submit" form="formCliente" class="btn-primary" style="margin:0;" id="btnGuardarCliente">
+                <i data-lucide="save" style="width:16px;height:16px"></i> <span id="btnSubmitText">Guardar Cliente</span>
+            </button>
+        </div>
+    </div>
+</div>
+
 <script src="js/menu.js"></script>
+<button class="theme-toggle-btn" id="btnThemeToggle" title="Cambiar tema">
+</button>
+<script>
+    const btnThemeToggle = document.getElementById('btnThemeToggle');
+    const updateIcon = () => {
+        const isLight = document.documentElement.getAttribute('data-theme') === 'light';
+        btnThemeToggle.innerHTML = `<i data-lucide="${isLight ? 'moon' : 'sun'}"></i>`;
+        if(window.lucide) lucide.createIcons();
+    };
+    updateIcon();
+    btnThemeToggle.addEventListener('click', () => {
+        const newTheme = document.documentElement.getAttribute('data-theme') === 'light' ? 'dark' : 'light';
+        document.documentElement.setAttribute('data-theme', newTheme);
+        localStorage.setItem('theme', newTheme);
+        updateIcon();
+    });
+</script>
 </body>
 </html>

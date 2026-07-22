@@ -1,1 +1,8 @@
+# Node dependencies
 node_modules
+
+# Backend dependencies
+/backend/node_modules
+
+# Frontend dependencies
+/frontend/node_modules

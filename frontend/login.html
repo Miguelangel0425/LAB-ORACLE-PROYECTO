@@ -2,33 +2,82 @@
 <html lang="es">
 <head>
 <meta charset="UTF-8">
-<title>Iniciar sesion - Sistema de Gestión Empresarial</title>
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Iniciar sesión - Sistema de Gestión Empresarial</title>
 <link rel="stylesheet" href="css/style.css">
+<!-- CDNs -->
+<script src="https://unpkg.com/lucide@latest"></script>
+<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+<script>
+    const savedTheme = localStorage.getItem('theme') || 'dark';
+    document.documentElement.setAttribute('data-theme', savedTheme);
+</script>
 </head>
 <body>
 <div class="center-screen">
     <div class="auth-card">
-        <h1>Iniciar sesión</h1>
-        <p class="subtitle">Sistema de Gestión Empresarial &mdash; Oracle DB</p>
+        <div class="auth-logo">
+            <div class="logo-icon"><i data-lucide="building-2"></i></div>
+            <div class="logo-text">Enterprise<span style="color:var(--accent)">OS</span></div>
+        </div>
+        
+        <h1>Bienvenido de vuelta</h1>
+        <p class="subtitle">Inicia sesión en tu cuenta para continuar</p>
 
         <form id="formLogin">
-            <label for="username">Usuario</label>
-            <input type="text" id="username" name="username" required autofocus>
+            <div class="input-group">
+                <i data-lucide="user" class="input-icon"></i>
+                <input type="text" id="username" name="username" placeholder="Usuario" required autofocus>
+            </div>
 
-            <label for="password">Contraseña</label>
-            <input type="password" id="password" name="password" required>
+            <div class="input-group" style="margin-top: 16px;">
+                <i data-lucide="lock" class="input-icon"></i>
+                <input type="password" id="password" name="password" placeholder="Contraseña" required>
+                <button type="button" class="password-toggle" id="togglePassword">
+                    <i data-lucide="eye"></i>
+                </button>
+            </div>
 
-            <button type="submit" class="btn-primary">Ingresar</button>
+            <button type="submit" class="btn-primary" id="btnLogin">
+                Ingresar al sistema
+                <i data-lucide="arrow-right" style="width:16px; height:16px;"></i>
+            </button>
         </form>
 
-        <div id="mensaje"></div>
-
         <div class="link-row">
-            &iquest;No tienes cuenta? <a href="register.html">Registrate aqui</a>
+            ¿No tienes cuenta? <a href="register.html">Regístrate aquí</a>
         </div>
     </div>
 </div>
 
 <script src="js/login.js"></script>
+<script>
+    lucide.createIcons();
+    const togglePassword = document.getElementById('togglePassword');
+    const password = document.getElementById('password');
+    togglePassword.addEventListener('click', () => {
+        const type = password.getAttribute('type') === 'password' ? 'text' : 'password';
+        password.setAttribute('type', type);
+        togglePassword.innerHTML = type === 'password' ? '<i data-lucide="eye"></i>' : '<i data-lucide="eye-off"></i>';
+        lucide.createIcons();
+    });
+</script>
+<button class="theme-toggle-btn" id="btnThemeToggle" title="Cambiar tema">
+</button>
+<script>
+    const btnThemeToggle = document.getElementById('btnThemeToggle');
+    const updateIcon = () => {
+        const isLight = document.documentElement.getAttribute('data-theme') === 'light';
+        btnThemeToggle.innerHTML = `<i data-lucide="${isLight ? 'moon' : 'sun'}"></i>`;
+        if(window.lucide) lucide.createIcons();
+    };
+    updateIcon();
+    btnThemeToggle.addEventListener('click', () => {
+        const newTheme = document.documentElement.getAttribute('data-theme') === 'light' ? 'dark' : 'light';
+        document.documentElement.setAttribute('data-theme', newTheme);
+        localStorage.setItem('theme', newTheme);
+        updateIcon();
+    });
+</script>
 </body>
 </html>

@@ -77,6 +77,15 @@ router.post('/', async (req, res) => {
         res.status(400).json({ ok: false, mensaje: o_estado });
     } catch (err) {
         console.error(err);
+        if (err.message.includes('ORA-00001')) {
+            if (err.message.includes('TELEFONO')) {
+                return res.status(400).json({ ok: false, mensaje: 'Error: El número de teléfono ingresado ya está registrado por otro cliente.' });
+            }
+            if (err.message.includes('EMAIL')) {
+                return res.status(400).json({ ok: false, mensaje: 'Error: El correo electrónico ya se encuentra registrado por otro cliente.' });
+            }
+            return res.status(400).json({ ok: false, mensaje: 'Error: Los datos ingresados ya existen (violación de restricción única).' });
+        }
         res.status(500).json({ ok: false, mensaje: 'Error al crear el cliente.' });
     } finally {
         if (conn) await conn.close();
@@ -110,6 +119,15 @@ router.put('/:id', async (req, res) => {
         res.status(400).json({ ok: false, mensaje: estado });
     } catch (err) {
         console.error(err);
+        if (err.message.includes('ORA-00001')) {
+            if (err.message.includes('TELEFONO')) {
+                return res.status(400).json({ ok: false, mensaje: 'Error: El número de teléfono ingresado ya está registrado por otro cliente.' });
+            }
+            if (err.message.includes('EMAIL')) {
+                return res.status(400).json({ ok: false, mensaje: 'Error: El correo electrónico ya se encuentra registrado por otro cliente.' });
+            }
+            return res.status(400).json({ ok: false, mensaje: 'Error: Los datos ingresados ya existen (violación de restricción única).' });
+        }
         res.status(500).json({ ok: false, mensaje: 'Error al actualizar el cliente.' });
     } finally {
         if (conn) await conn.close();

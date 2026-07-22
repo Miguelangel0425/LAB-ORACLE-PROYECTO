@@ -2,39 +2,132 @@
 <html lang="es">
 <head>
 <meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Registro de usuario - Sistema de Gestión Empresarial</title>
 <link rel="stylesheet" href="css/style.css">
+<!-- CDNs -->
+<script src="https://unpkg.com/lucide@latest"></script>
+<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+<script>
+    const savedTheme = localStorage.getItem('theme') || 'dark';
+    document.documentElement.setAttribute('data-theme', savedTheme);
+</script>
 </head>
 <body>
 <div class="center-screen">
     <div class="auth-card">
+        <div class="auth-logo">
+            <div class="logo-icon"><i data-lucide="building-2"></i></div>
+            <div class="logo-text">Enterprise<span style="color:var(--accent)">OS</span></div>
+        </div>
+        
         <h1>Crear cuenta</h1>
         <p class="subtitle">Registro de nuevo usuario</p>
 
         <form id="formRegister">
-            <label for="nombreCompleto">Nombre completo</label>
-            <input type="text" id="nombreCompleto" name="nombreCompleto" required autofocus>
+            <div class="input-group">
+                <i data-lucide="user-circle" class="input-icon"></i>
+                <input type="text" id="nombreCompleto" name="nombreCompleto" placeholder="Nombre completo" required autofocus>
+            </div>
 
-            <label for="username">Usuario</label>
-            <input type="text" id="username" name="username" required>
+            <div class="input-group" style="margin-top: 16px;">
+                <i data-lucide="user" class="input-icon"></i>
+                <input type="text" id="username" name="username" placeholder="Usuario" required>
+            </div>
 
-            <label for="password">Contraseña</label>
-            <input type="password" id="password" name="password" minlength="6" required>
+            <div class="input-group" style="margin-top: 16px;">
+                <i data-lucide="lock" class="input-icon"></i>
+                <input type="password" id="password" name="password" placeholder="Contraseña" minlength="6" required>
+                <button type="button" class="password-toggle" id="togglePassword">
+                    <i data-lucide="eye"></i>
+                </button>
+            </div>
+            
+            <div class="password-strength" id="pwdStrength">
+                <div class="bar"></div>
+                <div class="bar"></div>
+                <div class="bar"></div>
+            </div>
 
-            <label for="password2">Confirmar contraseña</label>
-            <input type="password" id="password2" name="password2" minlength="6" required>
+            <div class="input-group" style="margin-top: 16px;">
+                <i data-lucide="lock" class="input-icon"></i>
+                <input type="password" id="password2" name="password2" placeholder="Confirmar contraseña" minlength="6" required>
+            </div>
 
-            <button type="submit" class="btn-primary">Registrarme</button>
+            <button type="submit" class="btn-primary" id="btnRegister">
+                Registrarme
+                <i data-lucide="arrow-right" style="width:16px; height:16px;"></i>
+            </button>
         </form>
 
-        <div id="mensaje"></div>
-
         <div class="link-row">
-            &iquest;Ya tienes cuenta? <a href="login.html">Inicia sesión</a>
+            ¿Ya tienes cuenta? <a href="login.html">Inicia sesión</a>
         </div>
     </div>
 </div>
 
 <script src="js/register.js"></script>
+<script>
+    lucide.createIcons();
+    
+    // Toggle password visibility
+    const togglePassword = document.getElementById('togglePassword');
+    const password = document.getElementById('password');
+    togglePassword.addEventListener('click', () => {
+        const type = password.getAttribute('type') === 'password' ? 'text' : 'password';
+        password.setAttribute('type', type);
+        togglePassword.innerHTML = type === 'password' ? '<i data-lucide="eye"></i>' : '<i data-lucide="eye-off"></i>';
+        lucide.createIcons();
+    });
+
+    // Password strength indicator
+    const bars = document.querySelectorAll('#pwdStrength .bar');
+    password.addEventListener('input', () => {
+        const val = password.value;
+        bars.forEach(b => b.className = 'bar');
+        if (val.length > 0) {
+            bars[0].classList.add('weak');
+            if (val.length >= 6) {
+                bars[1].classList.add('medium');
+            }
+            if (val.length >= 8 && /[A-Z]/.test(val) && /[0-9]/.test(val)) {
+                bars[2].classList.add('strong');
+            }
+        }
+    });
+
+    // Match validation
+    const pwd2 = document.getElementById('password2');
+    pwd2.addEventListener('input', () => {
+        if (pwd2.value.length > 0) {
+            if (pwd2.value === password.value) {
+                pwd2.classList.remove('is-invalid');
+                pwd2.classList.add('is-valid');
+            } else {
+                pwd2.classList.remove('is-valid');
+                pwd2.classList.add('is-invalid');
+            }
+        } else {
+            pwd2.classList.remove('is-valid', 'is-invalid');
+        }
+    });
+</script>
+<button class="theme-toggle-btn" id="btnThemeToggle" title="Cambiar tema">
+</button>
+<script>
+    const btnThemeToggle = document.getElementById('btnThemeToggle');
+    const updateIcon = () => {
+        const isLight = document.documentElement.getAttribute('data-theme') === 'light';
+        btnThemeToggle.innerHTML = `<i data-lucide="${isLight ? 'moon' : 'sun'}"></i>`;
+        if(window.lucide) lucide.createIcons();
+    };
+    updateIcon();
+    btnThemeToggle.addEventListener('click', () => {
+        const newTheme = document.documentElement.getAttribute('data-theme') === 'light' ? 'dark' : 'light';
+        document.documentElement.setAttribute('data-theme', newTheme);
+        localStorage.setItem('theme', newTheme);
+        updateIcon();
+    });
+</script>
 </body>
 </html>
