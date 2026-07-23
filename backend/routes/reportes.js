@@ -2,6 +2,10 @@
 const express = require('express');
 const router = express.Router();
 const { getConnection } = require('../config/db');
+const { requireAdmin } = require('../middleware/auth');
+
+// Todos los reportes son informacion consolidada de negocio: exclusivos de ADMIN.
+router.use(requireAdmin);
 
 // GET /api/reportes/ventas-totales-cliente -> VW_VENTAS_TOTALES_CLIENTE
 router.get('/ventas-totales-cliente', async (req, res) => {

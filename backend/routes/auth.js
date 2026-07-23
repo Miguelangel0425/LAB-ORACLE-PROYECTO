@@ -2,6 +2,8 @@
 const express = require('express');
 const router = express.Router();
 const { getConnection, oracledb } = require('../config/db');
+const { createSession, destroySession } = require('../config/sessions');
+const { requireAuth } = require('../middleware/auth');
 
 // POST /api/auth/login
 // Body: { username, password }
@@ -17,24 +19,24 @@ router.post('/login', async (req, res) => {
         conn = await getConnection();
         const result = await conn.execute(
             `BEGIN
-                SP_LOGIN(:p_username, :p_password, :o_estado, :o_id_usuario, :o_nombre);
+                SP_LOGIN(:p_username, :p_password, :o_estado, :o_id_usuario, :o_nombre, :o_rol);
              END;`,
             {
                 p_username: username,
                 p_password: password,
                 o_estado: { dir: oracledb.BIND_OUT, type: oracledb.STRING, maxSize: 30 },
                 o_id_usuario: { dir: oracledb.BIND_OUT, type: oracledb.NUMBER },
-                o_nombre: { dir: oracledb.BIND_OUT, type: oracledb.STRING, maxSize: 150 }
+                o_nombre: { dir: oracledb.BIND_OUT, type: oracledb.STRING, maxSize: 150 },
+                o_rol: { dir: oracledb.BIND_OUT, type: oracledb.STRING, maxSize: 20 }
             }
         );
 
-        const { o_estado, o_id_usuario, o_nombre } = result.outBinds;
+        const { o_estado, o_id_usuario, o_nombre, o_rol } = result.outBinds;
 
         if (o_estado === 'OK') {
-            return res.json({
-                ok: true,
-                usuario: { id: o_id_usuario, username, nombre: o_nombre }
-            });
+            const usuario = { id: o_id_usuario, username, nombre: o_nombre, rol: o_rol };
+            const token = createSession(usuario);
+            return res.json({ ok: true, token, usuario });
         }
         if (o_estado === 'INACTIVO') {
             return res.status(403).json({ ok: false, mensaje: 'El usuario esta inactivo.' });
@@ -50,6 +52,8 @@ router.post('/login', async (req, res) => {
 
 // POST /api/auth/register
 // Body: { username, password, nombreCompleto }
+// El rol SIEMPRE queda como 'USUARIO' (lo fuerza SP_REGISTRO_USUARIO en la
+// base de datos); esta ruta no acepta ni reenvia ningun campo de rol.
 router.post('/register', async (req, res) => {
     const { username, password, nombreCompleto } = req.body;
 
@@ -87,6 +91,14 @@ router.post('/register', async (req, res) => {
     } finally {
         if (conn) await conn.close();
     }
+});
+
+// POST /api/auth/logout -> invalida el token actual
+router.post('/logout', requireAuth, (req, res) => {
+    const header = req.headers['authorization'] || '';
+    const token = header.startsWith('Bearer ') ? header.slice(7) : null;
+    if (token) destroySession(token);
+    res.json({ ok: true });
 });
 
 module.exports = router;

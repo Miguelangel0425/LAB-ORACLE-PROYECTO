@@ -10,9 +10,9 @@ oracledb.autoCommit = false; // el commit se maneja explicitamente en los proced
 
 const dbConfig = {
     user: process.env.DB_USER || 'PROYECTO_BD',
-    password: process.env.DB_PASSWORD || 'yostin2002',
+    password: process.env.DB_PASSWORD || 'miguel1234',
     // Ejemplo con Oracle 21c XE local: 'localhost:1521/XEPDB1'
-    connectString: process.env.DB_CONNECT_STRING || 'localhost:1521/XE',
+    connectString: process.env.DB_CONNECT_STRING || 'localhost:1521/XEPDB1',
     poolMin: 2,
     poolMax: 10,
     poolIncrement: 1

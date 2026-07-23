@@ -58,6 +58,9 @@ document.getElementById('formLogin').addEventListener('submit', async (e) => {
         const data = await resp.json();
 
         if (data.ok) {
+            // El backend emite un token de sesion (ademas de validar en
+            // Oracle via SP_LOGIN); se guarda junto con el usuario y su rol.
+            sessionStorage.setItem('token', data.token);
             sessionStorage.setItem('usuario', JSON.stringify(data.usuario));
             window.location.href = 'menu.html';
         } else {

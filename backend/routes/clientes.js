@@ -2,6 +2,7 @@
 const express = require('express');
 const router = express.Router();
 const { getConnection, oracledb } = require('../config/db');
+const { requireAdmin } = require('../middleware/auth');
 
 // GET /api/clientes -> lista todos los clientes (SP_CLIENTE_SELECT_ALL)
 router.get('/', async (req, res) => {
@@ -154,6 +155,35 @@ router.delete('/:id', async (req, res) => {
     } catch (err) {
         console.error(err);
         res.status(500).json({ ok: false, mensaje: 'Error al eliminar el cliente.' });
+    } finally {
+        if (conn) await conn.close();
+    }
+});
+
+// PUT /api/clientes/:id/estado -> activa/desactiva un cliente (soft-delete). Solo ADMIN.
+router.put('/:id/estado', requireAdmin, async (req, res) => {
+    const { activo } = req.body;
+    if (activo !== 0 && activo !== 1) {
+        return res.status(400).json({ ok: false, mensaje: 'El estado debe ser 0 o 1.' });
+    }
+    let conn;
+    try {
+        conn = await getConnection();
+        const result = await conn.execute(
+            `BEGIN SP_CLIENTE_CAMBIAR_ESTADO(:p_id, :p_activo, :o_estado); END;`,
+            {
+                p_id: req.params.id,
+                p_activo: activo,
+                o_estado: { dir: oracledb.BIND_OUT, type: oracledb.STRING, maxSize: 300 }
+            }
+        );
+        const estado = result.outBinds.o_estado;
+        if (estado === 'OK') return res.json({ ok: true, mensaje: 'Estado actualizado.' });
+        if (estado === 'NO_ENCONTRADO') return res.status(404).json({ ok: false, mensaje: 'Cliente no encontrado.' });
+        res.status(400).json({ ok: false, mensaje: estado });
+    } catch (err) {
+        console.error(err);
+        res.status(500).json({ ok: false, mensaje: 'Error al cambiar el estado del cliente.' });
     } finally {
         if (conn) await conn.close();
     }
