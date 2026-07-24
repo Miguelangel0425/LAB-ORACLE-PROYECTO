@@ -867,10 +867,11 @@ button .ripple {
 }
 
 .panel h3 {
-    font-size: 16px;
-    font-weight: 600;
+    font-size: 18px;
+    font-weight: 700;
+    text-transform: uppercase;
     color: var(--text-primary);
-    margin-bottom: 20px;
+    margin-bottom: 24px;
     display: flex;
     align-items: center;
     gap: 10px;
@@ -1500,6 +1501,12 @@ section {
 
 .dt-top {
     display: flex;
+    flex-wrap: wrap;
+    gap: 16px;
+    margin-bottom: 16px;
+}
+.dt-controls {
+    display: flex;
     justify-content: space-between;
     align-items: center;
     flex-wrap: wrap;
@@ -1521,3 +1528,507 @@ section {
     margin: 0 8px;
 }
 
+
+/* ========================================================================= */
+/* REDISEÑO REGISTRAR NUEVA VENTA (MODERN UX/UI)                             */
+/* ========================================================================= */
+
+.client-selector-toolbar {
+    margin-bottom: 24px;
+}
+
+.select-cliente-container {
+    padding: 12px 16px;
+    background: var(--bg-elevated);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+    transition: all var(--transition-normal);
+}
+
+.select-cliente-container:focus-within {
+    border-color: var(--accent);
+    box-shadow: 0 4px 12px rgba(103, 93, 230, 0.15);
+}
+
+.btn-agregar-producto {
+    padding: 12px 24px !important;
+    border-radius: 12px !important;
+    font-weight: 600 !important;
+    height: 100%;
+}
+
+.ventas-grid {
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+    margin-bottom: 32px;
+}
+
+.venta-card {
+    background: var(--bg-elevated);
+    border: 1px solid var(--border);
+    border-radius: 16px;
+    padding: 20px;
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.05);
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+    transition: transform var(--transition-normal), box-shadow var(--transition-normal);
+}
+
+.venta-card:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 8px 16px rgba(0, 0, 0, 0.1);
+    border-color: var(--border-hover);
+}
+
+.venta-card-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 16px;
+}
+
+.venta-card-header select {
+    flex: 1;
+    font-size: 16px;
+    font-weight: 500;
+    padding: 10px 16px;
+    border-radius: 8px;
+    background: var(--bg-input);
+    border: 1px solid var(--border);
+    color: var(--text-primary);
+}
+
+.btn-quitar-card {
+    width: 36px;
+    height: 36px;
+    border-radius: 50%;
+    background: rgba(239, 68, 68, 0.1);
+    color: var(--danger);
+    border: none;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    transition: all var(--transition-fast);
+}
+
+.btn-quitar-card:hover {
+    background: var(--danger);
+    color: white;
+}
+
+.venta-card-body {
+    display: grid;
+    grid-template-columns: 1fr auto;
+    gap: 24px;
+    align-items: center;
+}
+
+.info-grid {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 24px;
+    padding: 16px;
+    background: var(--bg-card);
+    border-radius: 12px;
+    border: 1px dashed var(--border);
+}
+
+.info-item {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+}
+
+.info-label {
+    font-size: 12px;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    color: var(--text-secondary);
+    font-weight: 600;
+}
+
+.info-value {
+    font-size: 15px;
+    font-weight: 500;
+    color: var(--text-primary);
+}
+
+.info-value.precio {
+    color: var(--success);
+}
+
+.info-value.subtotal {
+    font-size: 18px;
+    font-weight: 700;
+    color: var(--accent);
+}
+
+.qty-selector {
+    display: flex;
+    align-items: center;
+    background: var(--bg-input);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    overflow: hidden;
+}
+
+.qty-btn {
+    background: transparent;
+    border: none;
+    color: var(--text-secondary);
+    width: 40px;
+    height: 40px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    transition: background var(--transition-fast), color var(--transition-fast);
+}
+
+.qty-btn:hover {
+    background: var(--bg-hover);
+    color: var(--text-primary);
+}
+
+.qty-input {
+    width: 60px;
+    height: 40px;
+    text-align: center;
+    border: none;
+    background: transparent;
+    font-size: 16px;
+    font-weight: 600;
+    color: var(--text-primary);
+    border-left: 1px solid var(--border);
+    border-right: 1px solid var(--border);
+}
+
+.qty-input:focus {
+    outline: none;
+}
+
+/* Chrome, Safari, Edge, Opera */
+.qty-input::-webkit-outer-spin-button,
+.qty-input::-webkit-inner-spin-button {
+  -webkit-appearance: none;
+  margin: 0;
+}
+/* Firefox */
+.qty-input[type=number] {
+  -moz-appearance: textfield;
+}
+
+.venta-footer {
+    display: flex;
+    flex-direction: column;
+    gap: 24px;
+    margin-top: 32px;
+    padding-top: 24px;
+    border-top: 1px solid var(--border);
+}
+
+.total-prominente {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-end;
+    gap: 4px;
+}
+
+.total-label {
+    font-size: 14px;
+    font-weight: 600;
+    letter-spacing: 2px;
+    color: var(--text-secondary);
+}
+
+.total-valor {
+    font-size: 42px;
+    font-weight: 800;
+    color: var(--text-primary);
+    letter-spacing: -1px;
+}
+
+.btn-registrar-venta {
+    width: 100%;
+    padding: 16px;
+    font-size: 18px;
+    font-weight: 700;
+    color: white;
+    background: linear-gradient(135deg, var(--accent) 0%, #4f46e5 100%);
+    border: none;
+    border-radius: 12px;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 12px;
+    box-shadow: 0 4px 12px rgba(103, 93, 230, 0.3);
+    transition: all var(--transition-normal);
+}
+
+.btn-registrar-venta:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 6px 16px rgba(103, 93, 230, 0.4);
+    filter: brightness(1.1);
+}
+
+.btn-registrar-venta:active {
+    transform: translateY(0);
+}
+
+.btn-icon-large {
+    width: 24px;
+    height: 24px;
+}
+
+/* Responsive adjustments */
+@media (max-width: 768px) {
+    .venta-card-body {
+        grid-template-columns: 1fr;
+    }
+    
+    .info-grid {
+        justify-content: space-between;
+    }
+    
+    .total-prominente {
+        align-items: center;
+    }
+}
+
+/* ========================================================================= */
+/* REFINAMIENTOS DE DISEÑO (ALINEACIONES, COMPACTO, BOTÓN TOTAL)             */
+/* ========================================================================= */
+
+.client-selector-toolbar-flex {
+    display: flex;
+    gap: 16px;
+    align-items: stretch;
+    margin-bottom: 24px;
+}
+
+.select-cliente-container-flex {
+    flex: 1;
+    display: flex;
+    align-items: center;
+    background: var(--bg-elevated);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 0 16px;
+    height: 48px;
+    transition: all var(--transition-normal);
+}
+
+.select-cliente-container-flex:focus-within {
+    border-color: var(--accent);
+    box-shadow: 0 4px 12px rgba(103, 93, 230, 0.15);
+}
+
+.select-cliente-container-flex .select-cliente {
+    height: 100%;
+    border: none;
+    background: transparent;
+    padding-left: 10px;
+}
+
+.btn-agregar-producto-flex {
+    height: 48px;
+    padding: 0 24px !important;
+    border-radius: 12px !important;
+    font-weight: 600 !important;
+    margin: 0 !important;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.select-wrapper {
+    flex: 1;
+}
+
+.select-wrapper select {
+    width: 100%;
+}
+
+.btn-quitar-card {
+    opacity: 1;
+}
+
+.btn-quitar-card.disabled {
+    opacity: 0.3;
+    cursor: not-allowed;
+    background: transparent;
+    color: var(--text-secondary);
+}
+
+.btn-quitar-card.disabled:hover {
+    background: transparent;
+    color: var(--text-secondary);
+}
+
+.info-grid.compact {
+    gap: 12px;
+    padding: 12px;
+    background: transparent;
+    border: none;
+}
+
+.info-grid.compact .info-label {
+    font-size: 11px;
+}
+
+.info-grid.compact .info-value {
+    font-size: 13px;
+}
+
+.info-grid.compact .info-value.subtotal {
+    font-size: 15px;
+}
+
+.qty-selector-native {
+    display: flex;
+    align-items: center;
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    background: var(--bg-input);
+    height: 40px;
+}
+
+.qty-input-native {
+    width: 80px;
+    height: 100%;
+    background: transparent;
+    border: none;
+    color: var(--text-primary);
+    font-size: 16px;
+    font-weight: 600;
+    text-align: center;
+    padding: 0 8px;
+}
+
+/* Restore native arrows for this specific input */
+.qty-input-native::-webkit-outer-spin-button,
+.qty-input-native::-webkit-inner-spin-button {
+  -webkit-appearance: inner-spin-button !important;
+  opacity: 1;
+  margin: 0;
+}
+.qty-input-native[type=number] {
+  -moz-appearance: number-input;
+}
+
+.btn-registrar-venta-total {
+    width: 100%;
+    padding: 0 24px;
+    height: 60px;
+    font-size: 16px;
+    font-weight: 600;
+    color: white;
+    background: linear-gradient(135deg, var(--accent) 0%, #4f46e5 100%);
+    border: none;
+    border-radius: 12px;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    box-shadow: 0 4px 12px rgba(103, 93, 230, 0.3);
+    transition: all var(--transition-normal);
+}
+
+.btn-registrar-venta-total:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 6px 16px rgba(103, 93, 230, 0.4);
+    filter: brightness(1.1);
+}
+
+.btn-registrar-venta-total .btn-left {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+}
+
+.btn-registrar-venta-total .btn-separator {
+    flex: 1;
+    height: 1px;
+    background: rgba(255, 255, 255, 0.2);
+    margin: 0 24px;
+}
+
+.btn-registrar-venta-total .btn-right {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+}
+
+.btn-registrar-venta-total .btn-total-label {
+    font-size: 12px;
+    letter-spacing: 1px;
+    opacity: 0.8;
+}
+
+.btn-registrar-venta-total .btn-total-valor {
+    font-size: 24px;
+    font-weight: 800;
+    letter-spacing: -0.5px;
+}
+
+
+/* ========================================================================= */
+/* SEPARACIÓN DEL TOTAL Y EL BOTÓN                                           */
+/* ========================================================================= */
+
+.final-footer {
+    display: flex;
+    align-items: center;
+    justify-content: flex-end;
+    gap: 32px;
+    padding-top: 24px;
+    border-top: 1px solid var(--border);
+}
+
+.footer-total {
+    display: flex;
+    align-items: baseline;
+    gap: 12px;
+}
+
+.footer-total-label {
+    font-size: 14px;
+    font-weight: 600;
+    color: var(--text-secondary);
+    letter-spacing: 1px;
+}
+
+.footer-total-valor {
+    font-size: 32px;
+    font-weight: 800;
+    color: var(--text-primary);
+    letter-spacing: -1px;
+}
+
+.btn-registrar-venta-final {
+    padding: 0 32px;
+    height: 52px;
+    font-size: 16px;
+    font-weight: 600;
+    color: white;
+    background: linear-gradient(135deg, var(--accent) 0%, #4f46e5 100%);
+    border: none;
+    border-radius: 12px;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    box-shadow: 0 4px 12px rgba(103, 93, 230, 0.3);
+    transition: all var(--transition-normal);
+}
+
+.btn-registrar-venta-final:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 6px 16px rgba(103, 93, 230, 0.4);
+    filter: brightness(1.1);
+}

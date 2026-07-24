@@ -52,16 +52,17 @@ router.get('/:id', async (req, res) => {
 
 // POST /api/clientes -> crea un cliente (SP_CLIENTE_INSERT, dispara TRG_CLIENTES_BI)
 router.post('/', async (req, res) => {
-    const { nombre, apellido, email, telefono, direccion } = req.body;
+    const { cedula, nombre, apellido, email, telefono, direccion } = req.body;
     let conn;
     try {
         conn = await getConnection();
         const result = await conn.execute(
             `BEGIN
-                SP_CLIENTE_INSERT(:p_nombre, :p_apellido, :p_email, :p_telefono, :p_direccion,
+                SP_CLIENTE_INSERT(:p_cedula, :p_nombre, :p_apellido, :p_email, :p_telefono, :p_direccion,
                                    :o_id, :o_estado);
              END;`,
             {
+                p_cedula: cedula,
                 p_nombre: nombre,
                 p_apellido: apellido,
                 p_email: email,
@@ -75,6 +76,10 @@ router.post('/', async (req, res) => {
         if (o_estado === 'OK') {
             return res.status(201).json({ ok: true, idCliente: o_id });
         }
+        // Errores de cedula devueltos limpiamente por el procedimiento
+        if (o_estado && o_estado.startsWith('ERROR_CEDULA:')) {
+            return res.status(400).json({ ok: false, mensaje: o_estado.replace('ERROR_CEDULA: ', '') });
+        }
         res.status(400).json({ ok: false, mensaje: o_estado });
     } catch (err) {
         console.error(err);
@@ -85,27 +90,33 @@ router.post('/', async (req, res) => {
             if (err.message.includes('EMAIL')) {
                 return res.status(400).json({ ok: false, mensaje: 'Error: El correo electrónico ya se encuentra registrado por otro cliente.' });
             }
+            if (err.message.includes('CEDULA')) {
+                return res.status(400).json({ ok: false, mensaje: 'Error: La cédula ingresada ya está registrada por otro cliente.' });
+            }
             return res.status(400).json({ ok: false, mensaje: 'Error: Los datos ingresados ya existen (violación de restricción única).' });
         }
-        res.status(500).json({ ok: false, mensaje: 'Error al crear el cliente.' });
+        // Mostrar mensaje real de Oracle si existe
+        const oraMsg = err.message ? err.message.split('\n')[0] : 'Error al crear el cliente.';
+        res.status(500).json({ ok: false, mensaje: oraMsg });
     } finally {
         if (conn) await conn.close();
     }
 });
 
-// PUT /api/clientes/:id -> actualiza un cliente (SP_CLIENTE_UPDATE, dispara TRG_CLIENTES_AU)
+// PUT /api/clientes/:id -> actualiza un cliente (SP_CLIENTE_UPDATE)
 router.put('/:id', async (req, res) => {
-    const { nombre, apellido, email, telefono, direccion } = req.body;
+    const { cedula, nombre, apellido, email, telefono, direccion } = req.body;
     let conn;
     try {
         conn = await getConnection();
         const result = await conn.execute(
             `BEGIN
-                SP_CLIENTE_UPDATE(:p_id, :p_nombre, :p_apellido, :p_email, :p_telefono, :p_direccion,
+                SP_CLIENTE_UPDATE(:p_id, :p_cedula, :p_nombre, :p_apellido, :p_email, :p_telefono, :p_direccion,
                                    :o_estado);
              END;`,
             {
                 p_id: req.params.id,
+                p_cedula: cedula,
                 p_nombre: nombre,
                 p_apellido: apellido,
                 p_email: email,
@@ -117,6 +128,10 @@ router.put('/:id', async (req, res) => {
         const estado = result.outBinds.o_estado;
         if (estado === 'OK') return res.json({ ok: true, mensaje: 'Cliente actualizado.' });
         if (estado === 'NO_ENCONTRADO') return res.status(404).json({ ok: false, mensaje: 'Cliente no encontrado.' });
+        // Errores de cedula devueltos limpiamente por el procedimiento
+        if (estado && estado.startsWith('ERROR_CEDULA:')) {
+            return res.status(400).json({ ok: false, mensaje: estado.replace('ERROR_CEDULA: ', '') });
+        }
         res.status(400).json({ ok: false, mensaje: estado });
     } catch (err) {
         console.error(err);
@@ -127,9 +142,14 @@ router.put('/:id', async (req, res) => {
             if (err.message.includes('EMAIL')) {
                 return res.status(400).json({ ok: false, mensaje: 'Error: El correo electrónico ya se encuentra registrado por otro cliente.' });
             }
+            if (err.message.includes('CEDULA')) {
+                return res.status(400).json({ ok: false, mensaje: 'Error: La cédula ingresada ya está registrada por otro cliente.' });
+            }
             return res.status(400).json({ ok: false, mensaje: 'Error: Los datos ingresados ya existen (violación de restricción única).' });
         }
-        res.status(500).json({ ok: false, mensaje: 'Error al actualizar el cliente.' });
+        // Mostrar mensaje real de Oracle si existe
+        const oraMsg = err.message ? err.message.split('\n')[0] : 'Error al actualizar el cliente.';
+        res.status(500).json({ ok: false, mensaje: oraMsg });
     } finally {
         if (conn) await conn.close();
     }

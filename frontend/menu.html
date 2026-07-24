@@ -1,491 +1,555 @@
 <!DOCTYPE html>
 <html lang="es">
+
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Dashboard - EnterpriseOS</title>
-<link rel="stylesheet" href="css/style.css">
-<!-- CDNs -->
-<script src="https://unpkg.com/lucide@latest"></script>
-<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
-<link rel="stylesheet" href="https://cdn.datatables.net/1.13.6/css/jquery.dataTables.min.css">
-<link rel="stylesheet" href="https://cdn.datatables.net/buttons/2.4.1/css/buttons.dataTables.min.css">
-<script src="https://code.jquery.com/jquery-3.7.0.min.js"></script>
-<script>
-    const savedTheme = localStorage.getItem('theme') || 'dark';
-    document.documentElement.setAttribute('data-theme', savedTheme);
-</script>
-<script src="https://cdn.datatables.net/1.13.6/js/jquery.dataTables.min.js"></script>
-<script src="https://cdn.datatables.net/buttons/2.4.1/js/dataTables.buttons.min.js"></script>
-<script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
-<script src="https://cdnjs.cloudflare.com/ajax/libs/pdfmake/0.1.53/pdfmake.min.js"></script>
-<script src="https://cdnjs.cloudflare.com/ajax/libs/pdfmake/0.1.53/vfs_fonts.js"></script>
-<script src="https://cdn.datatables.net/buttons/2.4.1/js/buttons.html5.min.js"></script>
-<script src="https://cdn.datatables.net/buttons/2.4.1/js/buttons.print.min.js"></script>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Dashboard - EnterpriseOS</title>
+    <link rel="stylesheet" href="css/style.css">
+    <!-- CDNs -->
+    <script src="https://unpkg.com/lucide@latest"></script>
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+    <link rel="stylesheet" href="https://cdn.datatables.net/1.13.6/css/jquery.dataTables.min.css">
+    <link rel="stylesheet" href="https://cdn.datatables.net/buttons/2.4.1/css/buttons.dataTables.min.css">
+    <script src="https://code.jquery.com/jquery-3.7.0.min.js"></script>
+    <script>
+        const savedTheme = localStorage.getItem('theme') || 'dark';
+        document.documentElement.setAttribute('data-theme', savedTheme);
+    </script>
+    <script src="https://cdn.datatables.net/1.13.6/js/jquery.dataTables.min.js"></script>
+    <script src="https://cdn.datatables.net/buttons/2.4.1/js/dataTables.buttons.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/pdfmake/0.1.53/pdfmake.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/pdfmake/0.1.53/vfs_fonts.js"></script>
+    <script src="https://cdn.datatables.net/buttons/2.4.1/js/buttons.html5.min.js"></script>
+    <script src="https://cdn.datatables.net/buttons/2.4.1/js/buttons.print.min.js"></script>
 </head>
+
 <body>
 
-<div class="sidebar-overlay"></div>
+    <div class="sidebar-overlay"></div>
 
-<button class="mobile-toggle" id="btnMobileToggle">
-    <i data-lucide="menu"></i>
-</button>
+    <button class="mobile-toggle" id="btnMobileToggle">
+        <i data-lucide="menu"></i>
+    </button>
 
-<div class="app-shell">
-    <aside class="sidebar" id="sidebar">
-        <div class="sidebar-header">
-            <a href="#" class="sidebar-brand">
-                <div class="brand-icon"><i data-lucide="building-2"></i></div>
-                <div>
-                    <div class="brand-text">EnterpriseOS</div>
-                    <div class="brand-sub">Management System</div>
-                </div>
-            </a>
-        </div>
-
-        <div class="sidebar-user">
-            <div class="user-avatar" id="avatarInitial">U</div>
-            <div class="user-info">
-                <div class="user-name" id="lblUsuario">Usuario</div>
-                <div class="user-role" id="lblRol">Usuario</div>
+    <div class="app-shell">
+        <aside class="sidebar" id="sidebar">
+            <div class="sidebar-header">
+                <a href="#" class="sidebar-brand">
+                    <div class="brand-icon"><i data-lucide="building-2"></i></div>
+                    <div>
+                        <div class="brand-text">EnterpriseOS</div>
+                        <div class="brand-sub">Management System</div>
+                    </div>
+                </a>
             </div>
-        </div>
 
-        <nav class="sidebar-nav">
-            <div class="nav-label">Módulos Principales</div>
-            <button class="nav-item active" data-section="crud">
-                <i data-lucide="users" class="nav-icon"></i>
-                Gestión de Clientes
-            </button>
-            <button class="nav-item" data-section="productos">
-                <i data-lucide="package" class="nav-icon"></i>
-                Productos
-            </button>
-            <button class="nav-item" data-section="ventasAdmin">
-                <i data-lucide="shopping-cart" class="nav-icon"></i>
-                Ventas
-            </button>
-
-            <div class="nav-label admin-only hidden">Administración</div>
-            <button class="nav-item admin-only hidden" data-section="consultas">
-                <i data-lucide="bar-chart-3" class="nav-icon"></i>
-                Consultas de Ventas
-            </button>
-            <button class="nav-item admin-only hidden" data-section="reportes">
-                <i data-lucide="file-text" class="nav-icon"></i>
-                Reportes Globales
-            </button>
-            <button class="nav-item admin-only hidden" data-section="usuarios">
-                <i data-lucide="shield" class="nav-icon"></i>
-                Gestión de Usuarios
-            </button>
-        </nav>
-
-        <div class="sidebar-footer">
-            <button class="nav-item-logout" id="btnLogout">
-                <i data-lucide="log-out" class="nav-icon"></i>
-                Cerrar Sesión
-            </button>
-        </div>
-    </aside>
-
-    <main class="main-content">
-        <!-- ================= CRUD CLIENTES ================= -->
-        <section id="sec-crud">
-            <div class="page-header" style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 16px;">
-                <div>
-                    <h1><i data-lucide="users" class="header-icon"></i> Gestión de Clientes</h1>
-                    <div class="page-subtitle">Administra la cartera de clientes, añade nuevos registros y edita la información.</div>
+            <div class="sidebar-user">
+                <div class="user-avatar" id="avatarInitial">U</div>
+                <div class="user-info">
+                    <div class="user-name" id="lblUsuario">Usuario</div>
+                    <div class="user-role" id="lblRol">Usuario</div>
                 </div>
-                <button class="btn-primary" id="btnNuevoClienteModal" style="margin: 0;">
-                    <i data-lucide="user-plus" style="width:16px;height:16px"></i> Nuevo Cliente
+            </div>
+
+            <nav class="sidebar-nav">
+                <div class="nav-label">Módulos Principales</div>
+                <button class="nav-item active" data-section="crud">
+                    <i data-lucide="users" class="nav-icon"></i>
+                    Gestión de Clientes
+                </button>
+                <button class="nav-item" data-section="productos">
+                    <i data-lucide="package" class="nav-icon"></i>
+                    Productos
+                </button>
+                <button class="nav-item" data-section="ventasAdmin">
+                    <i data-lucide="shopping-cart" class="nav-icon"></i>
+                    Ventas
+                </button>
+
+                <div class="nav-label admin-only hidden">Administración</div>
+                <button class="nav-item admin-only hidden" data-section="consultas">
+                    <i data-lucide="bar-chart-3" class="nav-icon"></i>
+                    Consultas de Ventas
+                </button>
+                <button class="nav-item admin-only hidden" data-section="reportes">
+                    <i data-lucide="file-text" class="nav-icon"></i>
+                    Reportes Globales
+                </button>
+                <button class="nav-item admin-only hidden" data-section="usuarios">
+                    <i data-lucide="shield" class="nav-icon"></i>
+                    Gestión de Usuarios
+                </button>
+            </nav>
+
+            <div class="sidebar-footer">
+                <button class="nav-item-logout" id="btnLogout">
+                    <i data-lucide="log-out" class="nav-icon"></i>
+                    Cerrar Sesión
                 </button>
             </div>
+        </aside>
 
-            <div class="panel">
-                <h3><i data-lucide="list" class="panel-icon"></i> Directorio de Clientes</h3>
-                <div class="table-responsive">
-                    <table id="tablaClientesDt" class="display" style="width:100%">
-                        <thead>
-                            <tr>
-                                <th>ID</th>
-                                <th>Cliente</th>
-                                <th>Email</th>
-                                <th>Teléfono</th>
-                                <th>Dirección</th>
-                                <th style="text-align:right">Acciones</th>
-                            </tr>
-                        </thead>
-                        <tbody id="tablaClientes">
-                            <!-- Skeleton loader -->
-                            <tr class="skeleton-row"><td colspan="6"><div class="skeleton-cell"></div></td></tr>
-                        </tbody>
-                    </table>
-                </div>
-            </div>
-        </section>
-
-        <!-- ================= CONSULTAS DE VENTAS ================= -->
-        <section id="sec-consultas" class="hidden">
-            <div class="page-header">
-                <div>
-                    <h1><i data-lucide="bar-chart-3" class="header-icon"></i> Consultas de Ventas</h1>
-                    <div class="page-subtitle">Analiza el rendimiento de ventas por cliente o rango de fechas.</div>
-                </div>
-            </div>
-
-            <div class="panel">
-                <h3><i data-lucide="pie-chart" class="panel-icon"></i> Ventas totales por cliente</h3>
-                <div class="toolbar">
-                    <div class="input-group">
-                        <i data-lucide="user" class="input-icon"></i>
-                        <select id="selectClienteVentas">
-                            <option value="">Seleccione un cliente...</option>
-                        </select>
-                    </div>
+        <main class="main-content">
+            <!-- ================= CRUD CLIENTES ================= -->
+            <section id="sec-crud">
+                <div class="page-header"
+                    style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 16px;">
                     <div>
-                        <button id="btnConsultarTotales" class="btn-primary" style="margin:0; width:100%;">
-                            <i data-lucide="search" style="width:16px;height:16px"></i> Consultar
-                        </button>
+                        <h1><i data-lucide="users" class="header-icon"></i> Gestión de Clientes</h1>
+                        <div class="page-subtitle">Administra la cartera de clientes, añade nuevos registros y edita la
+                            información.</div>
                     </div>
-                </div>
-                <div id="resultadoTotales">
-                    <div class="empty-state">
-                        <i data-lucide="pie-chart" class="empty-icon"></i>
-                        <p>Selecciona un cliente para ver sus estadísticas</p>
-                    </div>
-                </div>
-            </div>
-
-            <div class="panel">
-                <h3><i data-lucide="calendar" class="panel-icon"></i> Ventas por rango de fechas</h3>
-                <div class="toolbar">
-                    <div class="input-group">
-                        <i data-lucide="calendar" class="input-icon"></i>
-                        <input type="date" id="fechaInicio">
-                    </div>
-                    <div class="input-group">
-                        <i data-lucide="calendar" class="input-icon"></i>
-                        <input type="date" id="fechaFin">
-                    </div>
-                    <div>
-                        <button id="btnConsultarRango" class="btn-primary" style="margin:0; width:100%;">
-                            <i data-lucide="search" style="width:16px;height:16px"></i> Buscar Ventas
-                        </button>
-                    </div>
-                </div>
-                <table id="tablaRangoDt" class="display" style="width:100%">
-                    <thead>
-                        <tr>
-                            <th>Ticket</th>
-                            <th>Fecha</th>
-                            <th>Cliente</th>
-                            <th>Total</th>
-                        </tr>
-                    </thead>
-                    <tbody id="tablaRango">
-                        <tr><td colspan="4" class="empty-state" style="padding: 30px">
-                            <i data-lucide="calendar-search" class="empty-icon"></i>
-                            <p>Ingresa un rango de fechas para consultar las ventas</p>
-                        </td></tr>
-                    </tbody>
-                </table>
-            </div>
-        </section>
-
-        <!-- ================= REPORTES ================= -->
-        <section id="sec-reportes" class="hidden">
-            <div class="page-header">
-                <div>
-                    <h1><i data-lucide="file-text" class="header-icon"></i> Reportes Empresariales</h1>
-                    <div class="page-subtitle">Informes consolidados y métricas globales del sistema.</div>
-                </div>
-            </div>
-
-            <div class="stats-row" id="reportesGlobalStats">
-                <div class="stat-card">
-                    <div class="stat-label">Total Clientes</div>
-                    <div class="stat-value" id="statClientes">--</div>
-                </div>
-                <div class="stat-card">
-                    <div class="stat-label">Total Ventas Registradas</div>
-                    <div class="stat-value accent" id="statVentas">--</div>
-                </div>
-                <div class="stat-card">
-                    <div class="stat-label">Ingresos Totales</div>
-                    <div class="stat-value success" id="statIngresos">$--</div>
-                </div>
-            </div>
-
-            <div class="panel">
-                <h3><i data-lucide="trending-up" class="panel-icon"></i> Mejores Clientes (Volumen de compra)</h3>
-                <table id="dtReporteTotales" class="display" style="width:100%">
-                    <thead><tr><th>ID</th><th>Cliente</th><th># Transacciones</th><th>Volumen Total</th></tr></thead>
-                    <tbody id="tablaReporteTotales">
-                        <tr class="skeleton-row"><td colspan="4"><div class="skeleton-cell"></div></td></tr>
-                    </tbody>
-                </table>
-            </div>
-
-            <div class="panel">
-                <h3><i data-lucide="shopping-bag" class="panel-icon"></i> Detalle de Ventas Histórico</h3>
-                <table id="dtReporteDetalle" class="display" style="width:100%">
-                    <thead><tr><th>Ref</th><th>Fecha</th><th>Cliente</th><th>Producto</th><th>Cant.</th><th>Monto</th></tr></thead>
-                    <tbody id="tablaReporteDetalle">
-                        <tr class="skeleton-row"><td colspan="6"><div class="skeleton-cell"></div></td></tr>
-                    </tbody>
-                </table>
-            </div>
-
-            <div class="panel">
-                <h3><i data-lucide="users" class="panel-icon"></i> Registro de Clientes Activos</h3>
-                <table id="dtReporteClientes" class="display" style="width:100%">
-                    <thead><tr><th>ID</th><th>Cliente</th><th>Email</th><th>Registrado el</th></tr></thead>
-                    <tbody id="tablaReporteClientes">
-                        <tr class="skeleton-row"><td colspan="4"><div class="skeleton-cell"></div></td></tr>
-                    </tbody>
-                </table>
-            </div>
-        </section>
-
-        <!-- ================= GESTION DE PRODUCTOS (solo ADMIN) ================= -->
-        <!-- ================= PRODUCTOS (Crear/Listar: todos | Editar/Eliminar: ADMIN) ================= -->
-        <section id="sec-productos" class="hidden">
-            <div class="page-header" style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 16px;">
-                <div>
-                    <h1><i data-lucide="package" class="header-icon"></i> Productos</h1>
-                    <div class="page-subtitle">Consulta el catálogo y agrega productos nuevos.</div>
-                </div>
-                <button class="btn-primary" id="btnNuevoProductoModal" style="margin: 0;">
-                    <i data-lucide="plus" style="width:16px;height:16px"></i> Nuevo Producto
-                </button>
-            </div>
-
-            <div class="panel">
-                <h3><i data-lucide="list" class="panel-icon"></i> Catálogo de Productos</h3>
-                <div class="table-responsive">
-                    <table id="tablaProductosDt" class="display" style="width:100%">
-                        <thead>
-                            <tr>
-                                <th>ID</th>
-                                <th>Nombre</th>
-                                <th>Descripción</th>
-                                <th>Precio</th>
-                                <th>Stock</th>
-                                <th style="text-align:right">Acciones</th>
-                            </tr>
-                        </thead>
-                        <tbody id="tablaProductos">
-                            <tr class="skeleton-row"><td colspan="6"><div class="skeleton-cell"></div></td></tr>
-                        </tbody>
-                    </table>
-                </div>
-            </div>
-        </section>
-
-        <!-- ================= VENTAS (Registrar: todos | Listar/Ver/Eliminar: ADMIN) ================= -->
-        <section id="sec-ventasAdmin" class="hidden">
-            <div class="page-header">
-                <div>
-                    <h1><i data-lucide="shopping-cart" class="header-icon"></i> Ventas</h1>
-                    <div class="page-subtitle">Registra una nueva venta para un cliente.</div>
-                </div>
-            </div>
-
-            <div class="panel">
-                <h3><i data-lucide="plus-circle" class="panel-icon"></i> Registrar nueva venta</h3>
-                <div class="toolbar">
-                    <div class="input-group">
-                        <i data-lucide="user" class="input-icon"></i>
-                        <select id="selectClienteVenta">
-                            <option value="">Seleccione un cliente...</option>
-                        </select>
-                    </div>
-                    <div>
-                        <button type="button" id="btnAgregarLinea" class="btn-secondary" style="margin:0; width:100%;">
-                            <i data-lucide="plus" style="width:16px;height:16px"></i> Agregar producto
-                        </button>
-                    </div>
-                </div>
-
-                <div class="table-responsive">
-                    <table style="width:100%">
-                        <thead>
-                            <tr>
-                                <th>Producto</th>
-                                <th style="width:110px">Cantidad</th>
-                                <th style="width:120px">Subtotal</th>
-                                <th style="width:60px"></th>
-                            </tr>
-                        </thead>
-                        <tbody id="lineasVenta">
-                            <!-- lineas dinamicas -->
-                        </tbody>
-                    </table>
-                </div>
-
-                <div style="display:flex; justify-content:flex-end; align-items:center; gap:16px; margin-top:16px;">
-                    <div class="stat-label">Total: <strong id="totalVentaNueva" class="stat-value success" style="font-size:20px;">$0.00</strong></div>
-                    <button type="button" id="btnRegistrarVenta" class="btn-primary" style="margin:0;">
-                        <i data-lucide="save" style="width:16px;height:16px"></i> Registrar Venta
+                    <button class="btn-primary" id="btnNuevoClienteModal" style="margin: 0;">
+                        <i data-lucide="user-plus" style="width:16px;height:16px"></i> Nuevo Cliente
                     </button>
                 </div>
-            </div>
 
-            <div class="panel admin-only hidden" id="panelVentasRegistradas">
-                <h3><i data-lucide="list" class="panel-icon"></i> Ventas registradas</h3>
-                <div class="table-responsive">
-                    <table id="tablaVentasAdminDt" class="display" style="width:100%">
+                <div class="panel">
+                    <h3><i data-lucide="list" class="panel-icon"></i> Directorio de Clientes</h3>
+                    <div class="table-responsive">
+                        <table id="tablaClientesDt" class="display" style="width:100%">
+                            <thead>
+                                <tr>
+                                    <th>ID</th>
+                                    <th>Cédula</th>
+                                    <th>Cliente</th>
+                                    <th>Email</th>
+                                    <th>Teléfono</th>
+                                    <th>Dirección</th>
+                                    <th style="text-align:right">Acciones</th>
+                                </tr>
+                            </thead>
+                            <tbody id="tablaClientes">
+                                <!-- Skeleton loader -->
+                                <tr class="skeleton-row">
+                                    <td colspan="7">
+                                        <div class="skeleton-cell"></div>
+                                    </td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </section>
+
+            <!-- ================= CONSULTAS DE VENTAS ================= -->
+            <section id="sec-consultas" class="hidden">
+                <div class="page-header">
+                    <div>
+                        <h1><i data-lucide="bar-chart-3" class="header-icon"></i> Consultas de Ventas</h1>
+                        <div class="page-subtitle">Analiza el rendimiento de ventas por cliente o rango de fechas.</div>
+                    </div>
+                </div>
+
+                <div class="panel">
+                    <h3><i data-lucide="pie-chart" class="panel-icon"></i> Ventas totales por cliente</h3>
+                    <div class="toolbar">
+                        <div class="input-group">
+                            <i data-lucide="user" class="input-icon"></i>
+                            <select id="selectClienteVentas">
+                                <option value="">Seleccione un cliente...</option>
+                            </select>
+                        </div>
+                        <div>
+                            <button id="btnConsultarTotales" class="btn-primary" style="margin:0; width:100%;">
+                                <i data-lucide="search" style="width:16px;height:16px"></i> Consultar
+                            </button>
+                        </div>
+                    </div>
+                    <div id="resultadoTotales">
+                        <div class="empty-state">
+                            <i data-lucide="pie-chart" class="empty-icon"></i>
+                            <p>Selecciona un cliente para ver sus estadísticas</p>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="panel">
+                    <h3><i data-lucide="calendar" class="panel-icon"></i> Ventas por rango de fechas</h3>
+                    <div class="toolbar">
+                        <div class="input-group">
+                            <i data-lucide="calendar" class="input-icon"></i>
+                            <input type="date" id="fechaInicio">
+                        </div>
+                        <div class="input-group">
+                            <i data-lucide="calendar" class="input-icon"></i>
+                            <input type="date" id="fechaFin">
+                        </div>
+                        <div>
+                            <button id="btnConsultarRango" class="btn-primary" style="margin:0; width:100%;">
+                                <i data-lucide="search" style="width:16px;height:16px"></i> Buscar Ventas
+                            </button>
+                        </div>
+                    </div>
+                    <table id="tablaRangoDt" class="display" style="width:100%">
                         <thead>
                             <tr>
                                 <th>Ticket</th>
                                 <th>Fecha</th>
                                 <th>Cliente</th>
                                 <th>Total</th>
-                                <th style="text-align:right">Acciones</th>
                             </tr>
                         </thead>
-                        <tbody id="tablaVentasAdmin">
-                            <tr class="skeleton-row"><td colspan="5"><div class="skeleton-cell"></div></td></tr>
+                        <tbody id="tablaRango">
+                            <tr>
+                                <td colspan="4" class="empty-state" style="padding: 30px">
+                                    <i data-lucide="calendar-search" class="empty-icon"></i>
+                                    <p>Ingresa un rango de fechas para consultar las ventas</p>
+                                </td>
+                            </tr>
                         </tbody>
                     </table>
                 </div>
-            </div>
-        </section>
+            </section>
 
-        <!-- ================= GESTION DE USUARIOS (solo ADMIN) ================= -->
-        <section id="sec-usuarios" class="hidden">
-            <div class="page-header">
-                <div>
-                    <h1><i data-lucide="shield" class="header-icon"></i> Gestión de Usuarios</h1>
-                    <div class="page-subtitle">Administra los roles y el estado de acceso de cada usuario.</div>
+            <!-- ================= REPORTES ================= -->
+            <section id="sec-reportes" class="hidden">
+                <div class="page-header">
+                    <div>
+                        <h1><i data-lucide="file-text" class="header-icon"></i> Reportes Empresariales</h1>
+                        <div class="page-subtitle">Informes consolidados y métricas globales del sistema.</div>
+                    </div>
                 </div>
-            </div>
 
-            <div class="panel">
-                <h3><i data-lucide="users" class="panel-icon"></i> Usuarios del sistema</h3>
-                <div class="table-responsive">
-                    <table id="tablaUsuariosDt" class="display" style="width:100%">
+                <div class="stats-row" id="reportesGlobalStats">
+                    <div class="stat-card">
+                        <div class="stat-label">Total Clientes</div>
+                        <div class="stat-value" id="statClientes">--</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-label">Total Ventas Registradas</div>
+                        <div class="stat-value accent" id="statVentas">--</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-label">Ingresos Totales</div>
+                        <div class="stat-value success" id="statIngresos">$--</div>
+                    </div>
+                </div>
+
+                <div class="panel">
+                    <h3><i data-lucide="trending-up" class="panel-icon"></i> Mejores Clientes (Volumen de compra)</h3>
+                    <table id="dtReporteTotales" class="display" style="width:100%">
                         <thead>
                             <tr>
                                 <th>ID</th>
-                                <th>Usuario</th>
-                                <th>Nombre</th>
-                                <th>Rol</th>
-                                <th>Estado</th>
-                                <th style="text-align:right">Acciones</th>
+                                <th>Cliente</th>
+                                <th># Transacciones</th>
+                                <th>Volumen Total</th>
                             </tr>
                         </thead>
-                        <tbody id="tablaUsuarios">
-                            <tr class="skeleton-row"><td colspan="6"><div class="skeleton-cell"></div></td></tr>
+                        <tbody id="tablaReporteTotales">
+                            <tr class="skeleton-row">
+                                <td colspan="4">
+                                    <div class="skeleton-cell"></div>
+                                </td>
+                            </tr>
                         </tbody>
                     </table>
                 </div>
+
+                <div class="panel">
+                    <h3><i data-lucide="shopping-bag" class="panel-icon"></i> Detalle de Ventas Histórico</h3>
+                    <table id="dtReporteDetalle" class="display" style="width:100%">
+                        <thead>
+                            <tr>
+                                <th>Ref</th>
+                                <th>Fecha</th>
+                                <th>Cliente</th>
+                                <th>Producto</th>
+                                <th>Cant.</th>
+                                <th>Monto</th>
+                            </tr>
+                        </thead>
+                        <tbody id="tablaReporteDetalle">
+                            <tr class="skeleton-row">
+                                <td colspan="6">
+                                    <div class="skeleton-cell"></div>
+                                </td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+
+                <div class="panel">
+                    <h3><i data-lucide="users" class="panel-icon"></i> Registro de Clientes Activos</h3>
+                    <table id="dtReporteClientes" class="display" style="width:100%">
+                        <thead>
+                            <tr>
+                                <th>ID</th>
+                                <th>Cliente</th>
+                                <th>Email</th>
+                                <th>Registrado el</th>
+                            </tr>
+                        </thead>
+                        <tbody id="tablaReporteClientes">
+                            <tr class="skeleton-row">
+                                <td colspan="4">
+                                    <div class="skeleton-cell"></div>
+                                </td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </section>
+
+            <!-- ================= GESTION DE PRODUCTOS (solo ADMIN) ================= -->
+            <!-- ================= PRODUCTOS (Crear/Listar: todos | Editar/Eliminar: ADMIN) ================= -->
+            <section id="sec-productos" class="hidden">
+                <div class="page-header"
+                    style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 16px;">
+                    <div>
+                        <h1><i data-lucide="package" class="header-icon"></i> Productos</h1>
+                        <div class="page-subtitle">Consulta el catálogo y agrega productos nuevos.</div>
+                    </div>
+                    <button class="btn-primary" id="btnNuevoProductoModal" style="margin: 0;">
+                        <i data-lucide="plus" style="width:16px;height:16px"></i> Nuevo Producto
+                    </button>
+                </div>
+
+                <div class="panel">
+                    <h3><i data-lucide="list" class="panel-icon"></i> Catálogo de Productos</h3>
+                    <div class="table-responsive">
+                        <table id="tablaProductosDt" class="display" style="width:100%">
+                            <thead>
+                                <tr>
+                                    <th>ID</th>
+                                    <th>Nombre</th>
+                                    <th>Descripción</th>
+                                    <th>Precio</th>
+                                    <th>Stock</th>
+                                    <th style="text-align:right">Acciones</th>
+                                </tr>
+                            </thead>
+                            <tbody id="tablaProductos">
+                                <tr class="skeleton-row">
+                                    <td colspan="6">
+                                        <div class="skeleton-cell"></div>
+                                    </td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </section>
+
+            <!-- ================= VENTAS (Registrar: todos | Listar/Ver/Eliminar: ADMIN) ================= -->
+            <section id="sec-ventasAdmin" class="hidden">
+                <div class="page-header">
+                    <div>
+                        <h1><i data-lucide="shopping-cart" class="header-icon"></i> Ventas</h1>
+                        <div class="page-subtitle">Registra una nueva venta para un cliente.</div>
+                    </div>
+                </div>
+
+                <div class="panel">
+                    <h3><i data-lucide="plus-circle" class="panel-icon"></i> Registrar nueva venta</h3>
+                    <div class="toolbar client-selector-toolbar-flex">
+                        <div class="input-group full-width select-cliente-container-flex">
+                            <i data-lucide="user" class="input-icon"></i>
+                            <select id="selectClienteVenta" class="select-cliente">
+                                <option value="" disabled selected>Buscar y seleccionar un cliente...</option>
+                            </select>
+                        </div>
+                        <button type="button" id="btnAgregarLinea" class="btn-secondary btn-agregar-producto-flex">
+                            <i data-lucide="plus" style="width:16px;height:16px"></i> Agregar producto
+                        </button>
+                    </div>
+
+                    <div id="lineasVenta" class="ventas-grid">
+                        <!-- lineas dinamicas -->
+                    </div>
+
+                    <div class="venta-footer">
+                        <button type="button" id="btnRegistrarVenta" class="btn-registrar-venta-total">
+                            <div class="btn-left">
+                                <i data-lucide="check-circle" class="btn-icon-large"></i> Confirmar y Registrar Venta
+                            </div>
+                            <div class="btn-separator"></div>
+                            <div class="btn-right">
+                                <span class="btn-total-label">TOTAL</span>
+                                <strong id="totalVentaNueva" class="btn-total-valor">$0.00</strong>
+                            </div>
+                        </button>
+                    </div>
+                </div>
+
+                <div class="panel admin-only hidden" id="panelVentasRegistradas">
+                    <h3><i data-lucide="list" class="panel-icon"></i> Ventas registradas</h3>
+                    <div class="table-responsive">
+                        <table id="tablaVentasAdminDt" class="display" style="width:100%">
+                            <thead>
+                                <tr>
+                                    <th>Ticket</th>
+                                    <th>Fecha</th>
+                                    <th>Cliente</th>
+                                    <th>Total</th>
+                                    <th style="text-align:right">Acciones</th>
+                                </tr>
+                            </thead>
+                            <tbody id="tablaVentasAdmin">
+                                <tr class="skeleton-row">
+                                    <td colspan="5">
+                                        <div class="skeleton-cell"></div>
+                                    </td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </section>
+
+            <!-- ================= GESTION DE USUARIOS (solo ADMIN) ================= -->
+            <section id="sec-usuarios" class="hidden">
+                <div class="page-header">
+                    <div>
+                        <h1><i data-lucide="shield" class="header-icon"></i> Gestión de Usuarios</h1>
+                        <div class="page-subtitle">Administra los roles y el estado de acceso de cada usuario.</div>
+                    </div>
+                </div>
+
+                <div class="panel">
+                    <h3><i data-lucide="users" class="panel-icon"></i> Usuarios del sistema</h3>
+                    <div class="table-responsive">
+                        <table id="tablaUsuariosDt" class="display" style="width:100%">
+                            <thead>
+                                <tr>
+                                    <th>ID</th>
+                                    <th>Usuario</th>
+                                    <th>Nombre</th>
+                                    <th>Rol</th>
+                                    <th>Estado</th>
+                                    <th style="text-align:right">Acciones</th>
+                                </tr>
+                            </thead>
+                            <tbody id="tablaUsuarios">
+                                <tr class="skeleton-row">
+                                    <td colspan="6">
+                                        <div class="skeleton-cell"></div>
+                                    </td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </section>
+
+        </main>
+    </div>
+
+    <!-- ================= MODAL CLIENTE ================= -->
+    <div class="modal-overlay" id="modalClienteOverlay">
+        <div class="modal-box">
+            <div class="modal-header">
+                <h2 id="modalClienteTitulo"><i data-lucide="user-plus"></i> Nuevo Cliente</h2>
+                <button class="btn-close-modal" id="btnCloseModal"><i data-lucide="x"></i></button>
             </div>
-        </section>
-
-    </main>
-</div>
-
-<!-- ================= MODAL CLIENTE ================= -->
-<div class="modal-overlay" id="modalClienteOverlay">
-    <div class="modal-box">
-        <div class="modal-header">
-            <h2 id="modalClienteTitulo"><i data-lucide="user-plus"></i> Nuevo Cliente</h2>
-            <button class="btn-close-modal" id="btnCloseModal"><i data-lucide="x"></i></button>
-        </div>
-        <div class="modal-body">
-            <form id="formCliente">
-                <input type="hidden" id="idCliente">
-                <div class="form-grid">
-                    <div class="input-group">
-                        <i data-lucide="user" class="input-icon"></i>
-                        <input type="text" id="nombre" placeholder="Nombre" required>
+            <div class="modal-body">
+                <form id="formCliente">
+                    <input type="hidden" id="idCliente">
+                    <div class="form-grid">
+                        <div class="input-group">
+                            <i data-lucide="hash" class="input-icon"></i>
+                            <input type="text" id="cedula" placeholder="Cédula (10 dígitos)" pattern="^[0-9]{10}$"
+                                maxlength="10" title="Debe tener exactamente 10 dígitos numéricos"
+                                oninput="this.value = this.value.replace(/\\D/g, '')" required>
+                        </div>
+                        <div class="input-group">
+                            <i data-lucide="user" class="input-icon"></i>
+                            <input type="text" id="nombre" placeholder="Nombre" required>
+                        </div>
+                        <div class="input-group">
+                            <i data-lucide="user" class="input-icon"></i>
+                            <input type="text" id="apellido" placeholder="Apellido" required>
+                        </div>
+                        <div class="input-group">
+                            <i data-lucide="mail" class="input-icon"></i>
+                            <input type="email" id="email" placeholder="Correo electrónico" required>
+                        </div>
+                        <div class="input-group">
+                            <i data-lucide="phone" class="input-icon"></i>
+                            <input type="tel" id="telefono" placeholder="Teléfono (Ej: 0991234567)" pattern="^09\d{8}$"
+                                maxlength="10"
+                                title="Debe ser un celular ecuatoriano válido de 10 dígitos, empezando con 09"
+                                oninput="this.value = this.value.replace(/\D/g, '')" required>
+                        </div>
+                        <div class="input-group full-width">
+                            <i data-lucide="map-pin" class="input-icon"></i>
+                            <input type="text" id="direccion" placeholder="Dirección completa">
+                        </div>
                     </div>
-                    <div class="input-group">
-                        <i data-lucide="user" class="input-icon"></i>
-                        <input type="text" id="apellido" placeholder="Apellido" required>
-                    </div>
-                    <div class="input-group">
-                        <i data-lucide="mail" class="input-icon"></i>
-                        <input type="email" id="email" placeholder="Correo electrónico" required>
-                    </div>
-                    <div class="input-group">
-                        <i data-lucide="phone" class="input-icon"></i>
-                        <input type="tel" id="telefono" placeholder="Teléfono (Ej: 0991234567)" pattern="^09\d{8}$" maxlength="10" title="Debe ser un celular ecuatoriano válido de 10 dígitos, empezando con 09" oninput="this.value = this.value.replace(/\D/g, '')" required>
-                    </div>
-                    <div class="input-group full-width">
-                        <i data-lucide="map-pin" class="input-icon"></i>
-                        <input type="text" id="direccion" placeholder="Dirección completa">
-                    </div>
-                </div>
-            </form>
-        </div>
-        <div class="modal-footer">
-            <button type="button" id="btnCancelarModal" class="btn-secondary" style="margin:0;">Cancelar</button>
-            <button type="submit" form="formCliente" class="btn-primary" style="margin:0;" id="btnGuardarCliente">
-                <i data-lucide="save" style="width:16px;height:16px"></i> <span id="btnSubmitText">Guardar Cliente</span>
-            </button>
-        </div>
-    </div>
-</div>
-
-<!-- ================= MODAL PRODUCTO ================= -->
-<div class="modal-overlay" id="modalProductoOverlay">
-    <div class="modal-box">
-        <div class="modal-header">
-            <h2 id="modalProductoTitulo"><i data-lucide="plus"></i> Nuevo Producto</h2>
-            <button class="btn-close-modal" id="btnCloseModalProducto"><i data-lucide="x"></i></button>
-        </div>
-        <div class="modal-body">
-            <form id="formProducto">
-                <input type="hidden" id="idProducto">
-                <div class="form-grid">
-                    <div class="input-group full-width">
-                        <i data-lucide="tag" class="input-icon"></i>
-                        <input type="text" id="prodNombre" placeholder="Nombre del producto" required>
-                    </div>
-                    <div class="input-group full-width">
-                        <i data-lucide="file-text" class="input-icon"></i>
-                        <input type="text" id="prodDescripcion" placeholder="Descripción (opcional)">
-                    </div>
-                    <div class="input-group">
-                        <i data-lucide="dollar-sign" class="input-icon"></i>
-                        <input type="number" id="prodPrecio" placeholder="Precio" min="0" step="0.01" required>
-                    </div>
-                    <div class="input-group">
-                        <i data-lucide="boxes" class="input-icon"></i>
-                        <input type="number" id="prodStock" placeholder="Stock" min="0" step="1" required>
-                    </div>
-                </div>
-            </form>
-        </div>
-        <div class="modal-footer">
-            <button type="button" id="btnCancelarModalProducto" class="btn-secondary" style="margin:0;">Cancelar</button>
-            <button type="submit" form="formProducto" class="btn-primary" style="margin:0;" id="btnGuardarProducto">
-                <i data-lucide="save" style="width:16px;height:16px"></i> <span id="btnProductoSubmitText">Guardar Producto</span>
-            </button>
+                </form>
+            </div>
+            <div class="modal-footer">
+                <button type="button" id="btnCancelarModal" class="btn-secondary" style="margin:0;">Cancelar</button>
+                <button type="submit" form="formCliente" class="btn-primary" style="margin:0;" id="btnGuardarCliente">
+                    <i data-lucide="save" style="width:16px;height:16px"></i> <span id="btnSubmitText">Guardar
+                        Cliente</span>
+                </button>
+            </div>
         </div>
     </div>
-</div>
 
-<script src="js/menu.js"></script>
-<button class="theme-toggle-btn" id="btnThemeToggle" title="Cambiar tema">
-</button>
-<script>
-    const btnThemeToggle = document.getElementById('btnThemeToggle');
-    const updateIcon = () => {
-        const isLight = document.documentElement.getAttribute('data-theme') === 'light';
-        btnThemeToggle.innerHTML = `<i data-lucide="${isLight ? 'moon' : 'sun'}"></i>`;
-        if(window.lucide) lucide.createIcons();
-    };
-    updateIcon();
-    btnThemeToggle.addEventListener('click', () => {
-        const newTheme = document.documentElement.getAttribute('data-theme') === 'light' ? 'dark' : 'light';
-        document.documentElement.setAttribute('data-theme', newTheme);
-        localStorage.setItem('theme', newTheme);
+    <!-- ================= MODAL PRODUCTO ================= -->
+    <div class="modal-overlay" id="modalProductoOverlay">
+        <div class="modal-box">
+            <div class="modal-header">
+                <h2 id="modalProductoTitulo"><i data-lucide="plus"></i> Nuevo Producto</h2>
+                <button class="btn-close-modal" id="btnCloseModalProducto"><i data-lucide="x"></i></button>
+            </div>
+            <div class="modal-body">
+                <form id="formProducto">
+                    <input type="hidden" id="idProducto">
+                    <div class="form-grid">
+                        <div class="input-group full-width">
+                            <i data-lucide="tag" class="input-icon"></i>
+                            <input type="text" id="prodNombre" placeholder="Nombre del producto" required>
+                        </div>
+                        <div class="input-group full-width">
+                            <i data-lucide="file-text" class="input-icon"></i>
+                            <input type="text" id="prodDescripcion" placeholder="Descripción (opcional)">
+                        </div>
+                        <div class="input-group">
+                            <i data-lucide="dollar-sign" class="input-icon"></i>
+                            <input type="number" id="prodPrecio" placeholder="Precio" min="0" step="0.01" required>
+                        </div>
+                        <div class="input-group">
+                            <i data-lucide="boxes" class="input-icon"></i>
+                            <input type="number" id="prodStock" placeholder="Stock" min="0" step="1" required>
+                        </div>
+                    </div>
+                </form>
+            </div>
+            <div class="modal-footer">
+                <button type="button" id="btnCancelarModalProducto" class="btn-secondary"
+                    style="margin:0;">Cancelar</button>
+                <button type="submit" form="formProducto" class="btn-primary" style="margin:0;" id="btnGuardarProducto">
+                    <i data-lucide="save" style="width:16px;height:16px"></i> <span id="btnProductoSubmitText">Guardar
+                        Producto</span>
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <script src="js/menu.js"></script>
+    <button class="theme-toggle-btn" id="btnThemeToggle" title="Cambiar tema">
+    </button>
+    <script>
+        const btnThemeToggle = document.getElementById('btnThemeToggle');
+        const updateIcon = () => {
+            const isLight = document.documentElement.getAttribute('data-theme') === 'light';
+            btnThemeToggle.innerHTML = `<i data-lucide="${isLight ? 'moon' : 'sun'}"></i>`;
+            if (window.lucide) lucide.createIcons();
+        };
         updateIcon();
-    });
-</script>
+        btnThemeToggle.addEventListener('click', () => {
+            const newTheme = document.documentElement.getAttribute('data-theme') === 'light' ? 'dark' : 'light';
+            document.documentElement.setAttribute('data-theme', newTheme);
+            localStorage.setItem('theme', newTheme);
+            updateIcon();
+        });
+    </script>
 </body>
+
 </html>

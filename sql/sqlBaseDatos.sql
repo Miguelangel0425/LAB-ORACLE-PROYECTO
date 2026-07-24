@@ -83,6 +83,7 @@ CREATE TABLE USUARIOS (
 -- Clientes (entidad CRUD principal), ya con ACTIVO para activar/desactivar
 CREATE TABLE CLIENTES (
     ID_CLIENTE          NUMBER          NOT NULL,
+    CEDULA              VARCHAR2(10)    NOT NULL,
     NOMBRE              VARCHAR2(80)    NOT NULL,
     APELLIDO            VARCHAR2(80)    NOT NULL,
     EMAIL               VARCHAR2(150)   NOT NULL,
@@ -92,6 +93,7 @@ CREATE TABLE CLIENTES (
     FECHA_CREACION      DATE            DEFAULT SYSDATE NOT NULL,
     FECHA_MODIFICACION  DATE,
     CONSTRAINT PK_CLIENTES PRIMARY KEY (ID_CLIENTE),
+    CONSTRAINT UQ_CLIENTES_CEDULA UNIQUE (CEDULA),
     CONSTRAINT UQ_CLIENTES_EMAIL UNIQUE (EMAIL),
     CONSTRAINT CK_CLIENTES_ACTIVO CHECK (ACTIVO IN (0,1))
 );
@@ -467,6 +469,7 @@ END SP_VENTAS_RANGO_FECHAS;
 
 -- 7.6 CRUD de CLIENTES mediante procedimientos almacenados
 CREATE OR REPLACE PROCEDURE SP_CLIENTE_INSERT (
+    p_cedula      IN  VARCHAR2,
     p_nombre      IN  VARCHAR2,
     p_apellido    IN  VARCHAR2,
     p_email       IN  VARCHAR2,
@@ -475,10 +478,54 @@ CREATE OR REPLACE PROCEDURE SP_CLIENTE_INSERT (
     o_id_cliente  OUT NUMBER,
     o_estado      OUT VARCHAR2
 ) AS
+    v_cedula   VARCHAR2(10);
+    v_total    NUMBER := 0;
+    v_digito   NUMBER;
+    v_result   NUMBER;
 BEGIN
+    -- === Validacion de Cedula Ecuatoriana (Modulo 10) ===
+    v_cedula := TRIM(p_cedula);
+
+    IF NOT REGEXP_LIKE(v_cedula, '^[0-9]{10}$') THEN
+        o_estado := 'ERROR_CEDULA: La cedula debe tener exactamente 10 digitos numericos.';
+        RETURN;
+    END IF;
+
+    IF TO_NUMBER(SUBSTR(v_cedula, 1, 2)) < 1 OR TO_NUMBER(SUBSTR(v_cedula, 1, 2)) > 24 THEN
+        o_estado := 'ERROR_CEDULA: Cedula invalida (codigo de provincia debe estar entre 01 y 24).';
+        RETURN;
+    END IF;
+
+    IF TO_NUMBER(SUBSTR(v_cedula, 3, 1)) >= 6 THEN
+        o_estado := 'ERROR_CEDULA: Cedula invalida (tercer digito debe ser menor a 6 para personas naturales).';
+        RETURN;
+    END IF;
+
+    FOR i IN 1..9 LOOP
+        v_digito := TO_NUMBER(SUBSTR(v_cedula, i, 1));
+        IF MOD(i, 2) = 1 THEN
+            v_digito := v_digito * 2;
+            IF v_digito >= 10 THEN
+                v_digito := v_digito - 9;
+            END IF;
+        END IF;
+        v_total := v_total + v_digito;
+    END LOOP;
+
+    v_result := MOD(v_total, 10);
+    IF v_result != 0 THEN
+        v_result := 10 - v_result;
+    END IF;
+
+    IF v_result != TO_NUMBER(SUBSTR(v_cedula, 10, 1)) THEN
+        o_estado := 'ERROR_CEDULA: La cedula ingresada no es valida (fallo en verificacion Modulo 10).';
+        RETURN;
+    END IF;
+    -- === Fin validacion cedula ===
+
     o_id_cliente := SEQ_CLIENTES.NEXTVAL;
-    INSERT INTO CLIENTES (ID_CLIENTE, NOMBRE, APELLIDO, EMAIL, TELEFONO, DIRECCION)
-    VALUES (o_id_cliente, p_nombre, p_apellido, p_email, p_telefono, p_direccion);
+    INSERT INTO CLIENTES (ID_CLIENTE, CEDULA, NOMBRE, APELLIDO, EMAIL, TELEFONO, DIRECCION)
+    VALUES (o_id_cliente, v_cedula, p_nombre, p_apellido, p_email, p_telefono, p_direccion);
     COMMIT;
     o_estado := 'OK';
 EXCEPTION
@@ -490,6 +537,7 @@ END SP_CLIENTE_INSERT;
 
 CREATE OR REPLACE PROCEDURE SP_CLIENTE_UPDATE (
     p_id_cliente  IN  NUMBER,
+    p_cedula      IN  VARCHAR2,
     p_nombre      IN  VARCHAR2,
     p_apellido    IN  VARCHAR2,
     p_email       IN  VARCHAR2,
@@ -497,9 +545,54 @@ CREATE OR REPLACE PROCEDURE SP_CLIENTE_UPDATE (
     p_direccion   IN  VARCHAR2,
     o_estado      OUT VARCHAR2
 ) AS
+    v_cedula   VARCHAR2(10);
+    v_total    NUMBER := 0;
+    v_digito   NUMBER;
+    v_result   NUMBER;
 BEGIN
+    -- === Validacion de Cedula Ecuatoriana (Modulo 10) ===
+    v_cedula := TRIM(p_cedula);
+
+    IF NOT REGEXP_LIKE(v_cedula, '^[0-9]{10}$') THEN
+        o_estado := 'ERROR_CEDULA: La cedula debe tener exactamente 10 digitos numericos.';
+        RETURN;
+    END IF;
+
+    IF TO_NUMBER(SUBSTR(v_cedula, 1, 2)) < 1 OR TO_NUMBER(SUBSTR(v_cedula, 1, 2)) > 24 THEN
+        o_estado := 'ERROR_CEDULA: Cedula invalida (codigo de provincia debe estar entre 01 y 24).';
+        RETURN;
+    END IF;
+
+    IF TO_NUMBER(SUBSTR(v_cedula, 3, 1)) >= 6 THEN
+        o_estado := 'ERROR_CEDULA: Cedula invalida (tercer digito debe ser menor a 6 para personas naturales).';
+        RETURN;
+    END IF;
+
+    FOR i IN 1..9 LOOP
+        v_digito := TO_NUMBER(SUBSTR(v_cedula, i, 1));
+        IF MOD(i, 2) = 1 THEN
+            v_digito := v_digito * 2;
+            IF v_digito >= 10 THEN
+                v_digito := v_digito - 9;
+            END IF;
+        END IF;
+        v_total := v_total + v_digito;
+    END LOOP;
+
+    v_result := MOD(v_total, 10);
+    IF v_result != 0 THEN
+        v_result := 10 - v_result;
+    END IF;
+
+    IF v_result != TO_NUMBER(SUBSTR(v_cedula, 10, 1)) THEN
+        o_estado := 'ERROR_CEDULA: La cedula ingresada no es valida (fallo en verificacion Modulo 10).';
+        RETURN;
+    END IF;
+    -- === Fin validacion cedula ===
+
     UPDATE CLIENTES
-       SET NOMBRE = p_nombre,
+       SET CEDULA = v_cedula,
+           NOMBRE = p_nombre,
            APELLIDO = p_apellido,
            EMAIL = p_email,
            TELEFONO = p_telefono,
@@ -565,7 +658,7 @@ CREATE OR REPLACE PROCEDURE SP_CLIENTE_SELECT_ALL (
 ) AS
 BEGIN
     OPEN o_cursor FOR
-        SELECT ID_CLIENTE, NOMBRE, APELLIDO, EMAIL, TELEFONO, DIRECCION,
+        SELECT ID_CLIENTE, CEDULA, NOMBRE, APELLIDO, EMAIL, TELEFONO, DIRECCION,
                ACTIVO, FECHA_CREACION, FECHA_MODIFICACION
           FROM CLIENTES
          ORDER BY ID_CLIENTE;
@@ -578,7 +671,7 @@ CREATE OR REPLACE PROCEDURE SP_CLIENTE_SELECT_BY_ID (
 ) AS
 BEGIN
     OPEN o_cursor FOR
-        SELECT ID_CLIENTE, NOMBRE, APELLIDO, EMAIL, TELEFONO, DIRECCION,
+        SELECT ID_CLIENTE, CEDULA, NOMBRE, APELLIDO, EMAIL, TELEFONO, DIRECCION,
                ACTIVO, FECHA_CREACION, FECHA_MODIFICACION
           FROM CLIENTES
          WHERE ID_CLIENTE = p_id_cliente;
@@ -826,11 +919,57 @@ END SP_VENTA_DELETE;
 -- 8. TRIGGERS
 --------------------------------------------------------------------------------
 
--- 8.1 CLIENTES: BEFORE INSERT -> validacion de datos
+-- 8.1 CLIENTES: BEFORE INSERT -> validacion de datos (incluye Modulo 10 para cedula ecuatoriana)
 CREATE OR REPLACE TRIGGER TRG_CLIENTES_BI
 BEFORE INSERT ON CLIENTES
 FOR EACH ROW
+DECLARE
+    v_cedula    VARCHAR2(10);
+    v_total     NUMBER := 0;
+    v_digito    NUMBER;
+    v_result    NUMBER;
 BEGIN
+    -- 1. Verificar que la cedula tenga exactamente 10 digitos numericos
+    IF NOT REGEXP_LIKE(:NEW.CEDULA, '^[0-9]{10}$') THEN
+        RAISE_APPLICATION_ERROR(-20004, 'La cedula debe tener exactamente 10 digitos numericos.');
+    END IF;
+
+    v_cedula := :NEW.CEDULA;
+
+    -- 2. Los dos primeros digitos deben estar entre 01 y 24 (provincias del Ecuador)
+    IF TO_NUMBER(SUBSTR(v_cedula, 1, 2)) < 1 OR TO_NUMBER(SUBSTR(v_cedula, 1, 2)) > 24 THEN
+        RAISE_APPLICATION_ERROR(-20005, 'La cedula no es valida: el codigo de provincia (primeros 2 digitos) debe estar entre 01 y 24.');
+    END IF;
+
+    -- 3. El tercer digito debe ser menor que 6 (personas naturales)
+    IF TO_NUMBER(SUBSTR(v_cedula, 3, 1)) >= 6 THEN
+        RAISE_APPLICATION_ERROR(-20006, 'La cedula no es valida: el tercer digito debe ser menor a 6 para personas naturales.');
+    END IF;
+
+    -- 4. Algoritmo Modulo 10
+    FOR i IN 1..9 LOOP
+        v_digito := TO_NUMBER(SUBSTR(v_cedula, i, 1));
+        IF MOD(i, 2) = 1 THEN
+            v_digito := v_digito * 2;
+            IF v_digito >= 10 THEN
+                v_digito := v_digito - 9;
+            END IF;
+        END IF;
+        v_total := v_total + v_digito;
+    END LOOP;
+
+    v_result := MOD(v_total, 10);
+    IF v_result = 0 THEN
+        v_result := 0;
+    ELSE
+        v_result := 10 - v_result;
+    END IF;
+
+    IF v_result != TO_NUMBER(SUBSTR(v_cedula, 10, 1)) THEN
+        RAISE_APPLICATION_ERROR(-20007, 'La cedula ingresada no es valida (fallo en verificacion Modulo 10).');
+    END IF;
+
+    -- 5. Validaciones adicionales de otros campos
     IF :NEW.EMAIL IS NULL OR INSTR(:NEW.EMAIL, '@') = 0 THEN
         RAISE_APPLICATION_ERROR(-20001, 'El email del cliente no tiene un formato valido.');
     END IF;
@@ -881,7 +1020,53 @@ BEGIN
 END TRG_CLIENTES_AU;
 /
 
--- 8.3 CLIENTES: BEFORE UPDATE -> actualiza automaticamente FECHA_MODIFICACION
+-- 8.3a CLIENTES: BEFORE UPDATE -> validacion de cedula con Modulo 10
+CREATE OR REPLACE TRIGGER TRG_CLIENTES_BU_CEDULA
+BEFORE UPDATE OF CEDULA ON CLIENTES
+FOR EACH ROW
+DECLARE
+    v_cedula    VARCHAR2(10);
+    v_total     NUMBER := 0;
+    v_digito    NUMBER;
+    v_result    NUMBER;
+BEGIN
+    IF NOT REGEXP_LIKE(:NEW.CEDULA, '^[0-9]{10}$') THEN
+        RAISE_APPLICATION_ERROR(-20004, 'La cedula debe tener exactamente 10 digitos numericos.');
+    END IF;
+
+    v_cedula := :NEW.CEDULA;
+
+    IF TO_NUMBER(SUBSTR(v_cedula, 1, 2)) < 1 OR TO_NUMBER(SUBSTR(v_cedula, 1, 2)) > 24 THEN
+        RAISE_APPLICATION_ERROR(-20005, 'La cedula no es valida: el codigo de provincia (primeros 2 digitos) debe estar entre 01 y 24.');
+    END IF;
+
+    IF TO_NUMBER(SUBSTR(v_cedula, 3, 1)) >= 6 THEN
+        RAISE_APPLICATION_ERROR(-20006, 'La cedula no es valida: el tercer digito debe ser menor a 6 para personas naturales.');
+    END IF;
+
+    FOR i IN 1..9 LOOP
+        v_digito := TO_NUMBER(SUBSTR(v_cedula, i, 1));
+        IF MOD(i, 2) = 1 THEN
+            v_digito := v_digito * 2;
+            IF v_digito >= 10 THEN
+                v_digito := v_digito - 9;
+            END IF;
+        END IF;
+        v_total := v_total + v_digito;
+    END LOOP;
+
+    v_result := MOD(v_total, 10);
+    IF v_result != 0 THEN
+        v_result := 10 - v_result;
+    END IF;
+
+    IF v_result != TO_NUMBER(SUBSTR(v_cedula, 10, 1)) THEN
+        RAISE_APPLICATION_ERROR(-20007, 'La cedula ingresada no es valida (fallo en verificacion Modulo 10).');
+    END IF;
+END TRG_CLIENTES_BU_CEDULA;
+/
+
+-- 8.3b CLIENTES: BEFORE UPDATE -> actualiza automaticamente FECHA_MODIFICACION
 CREATE OR REPLACE TRIGGER TRG_CLIENTES_BU_FECHA
 BEFORE UPDATE ON CLIENTES
 FOR EACH ROW
@@ -949,17 +1134,12 @@ END TRG_PRODUCTOS_BD;
 -- Nota tecnica: un trigger AFTER no puede modificar directamente :NEW de la
 -- misma fila (ORA-04091 tabla mutante). Se usa una transaccion autonoma que
 -- hace un UPDATE independiente de la misma fila ya confirmada.
-CREATE OR REPLACE TRIGGER TRG_PRODUCTOS_AU_FECHA
-AFTER INSERT OR UPDATE ON PRODUCTOS
+CREATE OR REPLACE TRIGGER TRG_PRODUCTOS_BU_FECHA
+BEFORE UPDATE ON PRODUCTOS
 FOR EACH ROW
-DECLARE
-    PRAGMA AUTONOMOUS_TRANSACTION;
 BEGIN
-    UPDATE PRODUCTOS
-       SET FECHA_MODIFICACION = SYSDATE
-     WHERE ID_PRODUCTO = :NEW.ID_PRODUCTO;
-    COMMIT;
-END TRG_PRODUCTOS_AU_FECHA;
+    :NEW.FECHA_MODIFICACION := SYSDATE;
+END TRG_PRODUCTOS_BU_FECHA;
 /
 
 -- 8.8 VENTAS: AFTER INSERT -> auditoria de creacion (quien vendio)

@@ -36,7 +36,7 @@ const showToast = (message, type = 'info') => {
     };
 
     setTimeout(() => {
-        if(toast.parentElement) {
+        if (toast.parentElement) {
             toast.classList.add('toast-out');
             setTimeout(() => toast.remove(), 300);
         }
@@ -52,7 +52,7 @@ const dtConfig = {
     lengthMenu: [[10, 25, 50, 100, -1], [10, 25, 50, 100, "Todos"]],
     responsive: true,
     destroy: true,
-    dom: '<"dt-top"Blf>rt<"dt-bottom"ip>',
+    dom: '<"dt-top"B><"dt-controls"lf>rt<"dt-bottom"ip>',
     buttons: [
         { extend: 'copy', className: 'dt-button', text: '<i data-lucide="copy" style="width:14px;height:14px;margin-right:4px;"></i> Copiar' },
         { extend: 'csv', className: 'dt-button', text: '<i data-lucide="file-text" style="width:14px;height:14px;margin-right:4px;"></i> CSV' },
@@ -60,7 +60,7 @@ const dtConfig = {
         { extend: 'pdf', className: 'dt-button', text: '<i data-lucide="file" style="width:14px;height:14px;margin-right:4px;"></i> PDF' },
         { extend: 'print', className: 'dt-button', text: '<i data-lucide="printer" style="width:14px;height:14px;margin-right:4px;"></i> Imprimir' }
     ],
-    drawCallback: function() {
+    drawCallback: function () {
         lucide.createIcons();
     }
 };
@@ -126,7 +126,7 @@ document.getElementById('btnLogout').addEventListener('click', () => {
         color: 'var(--text-primary)'
     }).then(async (result) => {
         if (result.isConfirmed) {
-            try { await authFetch('/api/auth/logout', { method: 'POST' }); } catch (e) {}
+            try { await authFetch('/api/auth/logout', { method: 'POST' }); } catch (e) { }
             sessionStorage.removeItem('usuario');
             sessionStorage.removeItem('token');
             window.location.href = 'login.html';
@@ -237,6 +237,7 @@ async function cargarClientes() {
                     </button>` : '';
             tr.innerHTML = `
                 <td><span class="badge badge-info">#${c.ID_CLIENTE}</span></td>
+                <td>${c.CEDULA}</td>
                 <td><strong>${c.NOMBRE} ${c.APELLIDO}</strong> ${c.ACTIVO === 0 ? '<span class="badge badge-danger" style="margin-left:6px;">Inactivo</span>' : ''}</td>
                 <td>${c.EMAIL}</td>
                 <td>${c.TELEFONO || '<span style="opacity:0.5">-</span>'}</td>
@@ -255,16 +256,60 @@ async function cargarClientes() {
 
         lucide.createIcons();
         dtClientes = $('#tablaClientesDt').DataTable(dtConfig);
-    } catch(err) {
+    } catch (err) {
         showToast('Error cargando la tabla de clientes', 'error');
     }
+}
+
+// Funcion de validacion Modulo 10 para cedula ecuatoriana
+function validateCedulaEcuatoriana(cedula) {
+    cedula = cedula.trim();
+    // Paso 1: exactamente 10 digitos numericos
+    if (!/^[0-9]{10}$/.test(cedula)) {
+        return { ok: false, msg: 'La cédula debe tener exactamente 10 dígitos numéricos.' };
+    }
+    // Paso 2: código de provincia entre 01 y 24
+    const provincia = parseInt(cedula.substring(0, 2), 10);
+    if (provincia < 1 || provincia > 24) {
+        return { ok: false, msg: 'La cédula no es válida: los primeros 2 dígitos deben corresponder a una provincia ecuatoriana (01-24).' };
+    }
+    // Paso 3: tercer dígito debe ser menor que 6 (persona natural)
+    const tercerDigito = parseInt(cedula[2], 10);
+    if (tercerDigito >= 6) {
+        return { ok: false, msg: 'La cédula no es válida: el tercer dígito debe ser menor a 6 (persona natural).' };
+    }
+    // Paso 4: algoritmo Módulo 10
+    const coeficientes = [2, 1, 2, 1, 2, 1, 2, 1, 2];
+    let total = 0;
+    for (let i = 0; i < 9; i++) {
+        let val = parseInt(cedula[i], 10) * coeficientes[i];
+        if (val >= 10) val -= 9;
+        total += val;
+    }
+    const residuo = total % 10;
+    const digitoVerificador = residuo === 0 ? 0 : 10 - residuo;
+    if (digitoVerificador !== parseInt(cedula[9], 10)) {
+        return { ok: false, msg: 'La cédula ingresada no es válida (verificación Módulo 10 fallida).' };
+    }
+    return { ok: true };
 }
 
 formCliente.addEventListener('submit', async (e) => {
     e.preventDefault();
 
     const id = document.getElementById('idCliente').value;
+    const cedulaVal = document.getElementById('cedula').value.trim();
+
+    // Validacion frontend antes de enviar al servidor
+    // const cedulaCheck = validateCedulaEcuatoriana(cedulaVal);
+    // if (!cedulaCheck.ok) {
+    //     showToast(cedulaCheck.msg, 'error');
+    //     document.getElementById('cedula').focus();
+    //     return;
+    // }
+
     const payload = {
+        cedula: cedulaVal,
         nombre: document.getElementById('nombre').value.trim(),
         apellido: document.getElementById('apellido').value.trim(),
         email: document.getElementById('email').value.trim(),
@@ -306,9 +351,10 @@ formCliente.addEventListener('submit', async (e) => {
         btnGuardarCliente.disabled = false;
         btnGuardarCliente.innerHTML = origHtml;
     }
+
 });
 
-window.editarCliente = async function(id) {
+window.editarCliente = async function (id) {
     try {
         const resp = await authFetch(`/api/clientes/${id}`);
         const data = await resp.json();
@@ -319,6 +365,7 @@ window.editarCliente = async function(id) {
 
         const c = data.cliente;
         document.getElementById('idCliente').value = c.ID_CLIENTE;
+        document.getElementById('cedula').value = c.CEDULA;
         document.getElementById('nombre').value = c.NOMBRE;
         document.getElementById('apellido').value = c.APELLIDO;
         document.getElementById('email').value = c.EMAIL;
@@ -326,12 +373,12 @@ window.editarCliente = async function(id) {
         document.getElementById('direccion').value = c.DIRECCION || '';
 
         openModal(`Editar Cliente #${c.ID_CLIENTE}`, true);
-    } catch(err) {
+    } catch (err) {
         showToast('No se pudo cargar la información', 'error');
     }
 }
 
-window.eliminarCliente = async function(id) {
+window.eliminarCliente = async function (id) {
     Swal.fire({
         title: '¿Eliminar cliente?',
         text: 'Esta acción no se puede deshacer y puede fallar si tiene ventas asociadas.',
@@ -348,7 +395,7 @@ window.eliminarCliente = async function(id) {
                 const resp = await authFetch(`/api/clientes/${id}`, { method: 'DELETE' });
                 const data = await resp.json();
 
-                if(data.ok) {
+                if (data.ok) {
                     showToast('Cliente eliminado', 'success');
                     cargarClientes();
                 } else {
@@ -367,7 +414,7 @@ window.eliminarCliente = async function(id) {
     });
 }
 
-window.cambiarEstadoCliente = async function(id, activoActual) {
+window.cambiarEstadoCliente = async function (id, activoActual) {
     const nuevoEstado = activoActual === 1 ? 0 : 1;
     try {
         const resp = await authFetch(`/api/clientes/${id}/estado`, {
@@ -402,7 +449,7 @@ async function cargarSelectClientes() {
             opt.textContent = `${c.NOMBRE} ${c.APELLIDO}`;
             select.appendChild(opt);
         });
-    } catch(err) {
+    } catch (err) {
         console.error(err);
     }
 }
@@ -429,14 +476,14 @@ document.getElementById('btnConsultarTotales').addEventListener('click', async (
                     </div>
                     <div class="stat-card">
                         <div class="stat-label">Volumen total invertido</div>
-                        <div class="stat-value success">$${Number(data.totalComprado).toLocaleString('en-US', {minimumFractionDigits:2, maximumFractionDigits:2})}</div>
+                        <div class="stat-value success">$${Number(data.totalComprado).toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</div>
                     </div>
                 </div>
             `;
         } else {
             showToast(data.mensaje, 'error');
         }
-    } catch(err) {
+    } catch (err) {
         showToast('Error de conexión', 'error');
     }
 });
@@ -475,12 +522,12 @@ document.getElementById('btnConsultarRango').addEventListener('click', async () 
                 <td><span class="badge badge-info">#${v.ID_VENTA}</span></td>
                 <td>${new Date(v.FECHA_VENTA).toLocaleDateString()}</td>
                 <td>${v.CLIENTE}</td>
-                <td><strong>$${Number(v.TOTAL).toLocaleString('en-US', {minimumFractionDigits:2, maximumFractionDigits:2})}</strong></td>`;
+                <td><strong>$${Number(v.TOTAL).toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</strong></td>`;
             tbody.appendChild(tr);
         });
 
         dtRango = $('#tablaRangoDt').DataTable(dtConfig);
-    } catch(err) {
+    } catch (err) {
         showToast('Error de conexión', 'error');
     }
 });
@@ -511,7 +558,7 @@ async function cargarReportes() {
                     <td><span class="badge badge-info">#${r.ID_CLIENTE}</span></td>
                     <td><strong>${r.NOMBRE} ${r.APELLIDO}</strong></td>
                     <td>${r.NUMERO_VENTAS}</td>
-                    <td class="success"><strong>$${Number(r.TOTAL_COMPRADO).toLocaleString('en-US', {minimumFractionDigits:2, maximumFractionDigits:2})}</strong></td>`;
+                    <td class="success"><strong>$${Number(r.TOTAL_COMPRADO).toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</strong></td>`;
                 tTotales.appendChild(tr);
             });
             dtRepTotales = $('#dtReporteTotales').DataTable(dtConfig);
@@ -519,7 +566,7 @@ async function cargarReportes() {
 
         document.getElementById('statClientes').textContent = totalClientes;
         document.getElementById('statVentas').textContent = totalVentasGlobal;
-        document.getElementById('statIngresos').textContent = '$' + Number(ingresosGlobales).toLocaleString('en-US', {minimumFractionDigits:2, maximumFractionDigits:2});
+        document.getElementById('statIngresos').textContent = '$' + Number(ingresosGlobales).toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
 
         if (dtRepDetalle) dtRepDetalle.destroy();
         const tDetalle = document.getElementById('tablaReporteDetalle');
@@ -533,7 +580,7 @@ async function cargarReportes() {
                     <td>${r.CLIENTE}</td>
                     <td>${r.PRODUCTO}</td>
                     <td>${r.CANTIDAD}</td>
-                    <td>$${Number(r.TOTAL_VENTA).toLocaleString('en-US', {minimumFractionDigits:2, maximumFractionDigits:2})}</td>`;
+                    <td>$${Number(r.TOTAL_VENTA).toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</td>`;
                 tDetalle.appendChild(tr);
             });
             dtRepDetalle = $('#dtReporteDetalle').DataTable(dtConfig);
@@ -556,7 +603,7 @@ async function cargarReportes() {
         }
 
         lucide.createIcons();
-    } catch(err) {
+    } catch (err) {
         showToast('Hubo un problema cargando los reportes.', 'error');
     }
 }
@@ -628,7 +675,7 @@ async function cargarProductos() {
                 <td><span class="badge badge-info">#${p.ID_PRODUCTO}</span></td>
                 <td><strong>${p.NOMBRE}</strong></td>
                 <td>${p.DESCRIPCION || '<span style="opacity:0.5">-</span>'}</td>
-                <td>$${Number(p.PRECIO).toLocaleString('en-US', {minimumFractionDigits:2, maximumFractionDigits:2})}</td>
+                <td>$${Number(p.PRECIO).toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</td>
                 <td><span class="badge ${p.STOCK > 0 ? 'badge-success' : 'badge-danger'}">${p.STOCK}</span></td>
                 <td class="actions" style="text-align:right">${accionesAdmin}</td>`;
             tbody.appendChild(tr);
@@ -688,7 +735,7 @@ if (formProducto) {
     });
 }
 
-window.editarProducto = async function(id) {
+window.editarProducto = async function (id) {
     try {
         const resp = await authFetch(`/api/productos/${id}`);
         const data = await resp.json();
@@ -707,7 +754,7 @@ window.editarProducto = async function(id) {
     }
 }
 
-window.eliminarProducto = async function(id) {
+window.eliminarProducto = async function (id) {
     Swal.fire({
         title: '¿Eliminar producto?',
         text: 'Esta acción no se puede deshacer y puede fallar si ya tiene ventas asociadas.',
@@ -764,63 +811,109 @@ async function cargarProductosParaVenta() {
 }
 
 function crearOpcionesProducto(selectEl) {
-    selectEl.innerHTML = '<option value="">Seleccione...</option>';
+    selectEl.innerHTML = '<option value="" disabled selected>Seleccione un producto...</option>';
     catalogoProductos.forEach(p => {
         const opt = document.createElement('option');
         opt.value = p.ID_PRODUCTO;
         opt.dataset.precio = p.PRECIO;
         opt.dataset.stock = p.STOCK;
-        opt.textContent = `${p.NOMBRE} ($${Number(p.PRECIO).toFixed(2)} - stock: ${p.STOCK})`;
+        opt.textContent = p.NOMBRE;
         selectEl.appendChild(opt);
     });
 }
 
 function recalcularTotalVenta() {
     let total = 0;
-    document.querySelectorAll('#lineasVenta tr').forEach(tr => {
-        const subtotalSpan = tr.querySelector('.linea-subtotal');
+    document.querySelectorAll('#lineasVenta .venta-card').forEach(card => {
+        const subtotalSpan = card.querySelector('.info-value.subtotal');
         total += Number(subtotalSpan.dataset.valor || 0);
     });
-    document.getElementById('totalVentaNueva').textContent = '$' + total.toLocaleString('en-US', {minimumFractionDigits:2, maximumFractionDigits:2});
+    document.getElementById('totalVentaNueva').textContent = '$' + total.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
 }
 
-function actualizarSubtotalLinea(tr) {
-    const select = tr.querySelector('.linea-producto');
-    const cantidadInput = tr.querySelector('.linea-cantidad');
-    const subtotalSpan = tr.querySelector('.linea-subtotal');
+function actualizarSubtotalLinea(card) {
+    const select = card.querySelector('.linea-producto');
+    const cantidadInput = card.querySelector('.linea-cantidad');
+    const precioSpan = card.querySelector('.info-value.precio');
+    const stockSpan = card.querySelector('.info-value.stock');
+    const subtotalSpan = card.querySelector('.info-value.subtotal');
+    const btnQuitar = card.querySelector('.btn-quitar-card');
+
     const opt = select.selectedOptions[0];
     const precio = opt && opt.dataset.precio ? Number(opt.dataset.precio) : 0;
+    const stock = opt && opt.dataset.stock ? Number(opt.dataset.stock) : 0;
     const cantidad = Number(cantidadInput.value) || 0;
     const subtotal = precio * cantidad;
+
+    precioSpan.textContent = '$' + precio.toFixed(2);
+    stockSpan.textContent = stock;
     subtotalSpan.textContent = '$' + subtotal.toFixed(2);
     subtotalSpan.dataset.valor = subtotal;
+
+    if (select.value) {
+        btnQuitar.disabled = false;
+        btnQuitar.classList.remove('disabled');
+    } else {
+        btnQuitar.disabled = true;
+        btnQuitar.classList.add('disabled');
+    }
+
     recalcularTotalVenta();
 }
 
 function agregarLineaVenta() {
-    const tbody = document.getElementById('lineasVenta');
-    const tr = document.createElement('tr');
-    tr.innerHTML = `
-        <td>
-            <div class="input-group" style="margin:0;">
+    const contenedor = document.getElementById('lineasVenta');
+    const card = document.createElement('div');
+    card.className = 'venta-card';
+    card.innerHTML = `
+        <div class="venta-card-header">
+            <div class="select-wrapper">
                 <select class="linea-producto"></select>
             </div>
-        </td>
-        <td><input type="number" class="linea-cantidad" min="1" step="1" value="1" style="width:100%; padding:8px;"></td>
-        <td><span class="linea-subtotal" data-valor="0">$0.00</span></td>
-        <td style="text-align:center;">
-            <button type="button" class="btn-danger btn-icon btn-quitar-linea" title="Quitar">
-                <i data-lucide="x" style="width:14px;height:14px"></i>
+            <button type="button" class="btn-quitar-card disabled" title="Quitar" disabled>
+                <i data-lucide="trash-2" style="width:16px;height:16px"></i>
             </button>
-        </td>`;
-    tbody.appendChild(tr);
+        </div>
+        <div class="venta-card-body">
+            <div class="info-grid compact">
+                <div class="info-item">
+                    <span class="info-label">Precio</span>
+                    <span class="info-value precio">$0.00</span>
+                </div>
+                <div class="info-item">
+                    <span class="info-label">Stock</span>
+                    <span class="info-value stock">0</span>
+                </div>
+                <div class="info-item">
+                    <span class="info-label">Categoría</span>
+                    <span class="info-value">General</span>
+                </div>
+                <div class="info-item subtotal-item">
+                    <span class="info-label">Subtotal</span>
+                    <span class="info-value subtotal" data-valor="0">$0.00</span>
+                </div>
+            </div>
+            
+            <div class="qty-selector-native">
+                <input type="number" class="linea-cantidad qty-input-native" min="1" step="1" value="1">
+            </div>
+        </div>
+    `;
+    contenedor.appendChild(card);
 
-    const select = tr.querySelector('.linea-producto');
+    const select = card.querySelector('.linea-producto');
     crearOpcionesProducto(select);
-    select.addEventListener('change', () => actualizarSubtotalLinea(tr));
-    tr.querySelector('.linea-cantidad').addEventListener('input', () => actualizarSubtotalLinea(tr));
-    tr.querySelector('.btn-quitar-linea').addEventListener('click', () => {
-        tr.remove();
+
+    select.addEventListener('change', () => actualizarSubtotalLinea(card));
+
+    const inputQty = card.querySelector('.linea-cantidad');
+    inputQty.addEventListener('input', () => {
+        if (parseInt(inputQty.value) < 1) inputQty.value = 1;
+        actualizarSubtotalLinea(card);
+    });
+
+    card.querySelector('.btn-quitar-card').addEventListener('click', () => {
+        card.remove();
         recalcularTotalVenta();
     });
 
@@ -848,9 +941,9 @@ if (btnRegistrarVenta) {
         }
 
         const items = [];
-        document.querySelectorAll('#lineasVenta tr').forEach(tr => {
-            const idProducto = tr.querySelector('.linea-producto').value;
-            const cantidad = Number(tr.querySelector('.linea-cantidad').value);
+        document.querySelectorAll('#lineasVenta .venta-card').forEach(card => {
+            const idProducto = card.querySelector('.linea-producto').value;
+            const cantidad = Number(card.querySelector('.linea-cantidad').value);
             if (idProducto && cantidad > 0) {
                 items.push({ idProducto: Number(idProducto), cantidad });
             }
@@ -924,17 +1017,17 @@ async function cargarVentasAdmin() {
                 <td><span class="badge badge-info">#${v.ID_VENTA}</span></td>
                 <td>${new Date(v.FECHA_VENTA).toLocaleDateString()}</td>
                 <td>${v.CLIENTE}</td>
-                <td><strong>$${Number(v.TOTAL).toLocaleString('en-US', {minimumFractionDigits:2, maximumFractionDigits:2})}</strong></td>
-                <td class="actions" style="text-align:right">
+                <td><strong>$${Number(v.TOTAL).toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</strong></td>
+                <td class="actions" style="text-align:center">
                     <button class="btn-secondary btn-icon" onclick="verDetalleVenta(${v.ID_VENTA})" title="Ver detalle">
                         <i data-lucide="eye" style="width:16px;height:16px"></i>
                     </button>
-                    <button class="btn-danger btn-icon" onclick="eliminarVenta(${v.ID_VENTA})" title="Eliminar">
-                        <i data-lucide="trash-2" style="width:16px;height:16px"></i>
-                    </button>
-                </td>`;
+                    </td>`;
             tbody.appendChild(tr);
         });
+        // <button class="btn-danger btn-icon" onclick="eliminarVenta(${v.ID_VENTA})" title="Eliminar">
+        //     <i data-lucide="trash-2" style="width:16px;height:16px"></i>
+        // </button>
 
         lucide.createIcons();
         dtVentasAdmin = $('#tablaVentasAdminDt').DataTable(dtConfig);
@@ -943,7 +1036,7 @@ async function cargarVentasAdmin() {
     }
 }
 
-window.verDetalleVenta = async function(idVenta) {
+window.verDetalleVenta = async function (idVenta) {
     try {
         const resp = await authFetch(`/api/ventas/${idVenta}/detalle`);
         const data = await resp.json();
@@ -977,7 +1070,7 @@ window.verDetalleVenta = async function(idVenta) {
     }
 }
 
-window.eliminarVenta = async function(idVenta) {
+window.eliminarVenta = async function (idVenta) {
     Swal.fire({
         title: '¿Eliminar venta?',
         text: 'Se eliminará la venta completa y se restituirá el stock de sus productos.',
@@ -1046,7 +1139,7 @@ async function cargarUsuarios() {
     }
 }
 
-window.cambiarRolUsuario = async function(id, rolActual) {
+window.cambiarRolUsuario = async function (id, rolActual) {
     const nuevoRol = rolActual === 'ADMIN' ? 'USUARIO' : 'ADMIN';
     Swal.fire({
         title: `¿Cambiar a ${nuevoRol}?`,
@@ -1078,7 +1171,7 @@ window.cambiarRolUsuario = async function(id, rolActual) {
     });
 }
 
-window.cambiarEstadoUsuario = async function(id, activoActual) {
+window.cambiarEstadoUsuario = async function (id, activoActual) {
     const nuevoEstado = activoActual === 1 ? 0 : 1;
     try {
         const resp = await authFetch(`/api/usuarios/${id}/estado`, {
